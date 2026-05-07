@@ -1,25 +1,25 @@
-# Имя файла: orchestrator.py
-# Путь: app/engine/orchestrator.py - from GIT
-# Кодовое название: Orchestrator
-# Версия: v.0.3.8.0
+# File name: orchestrator.py
+# path: app/engine/orchestrator.py
+# Internal name: Orchestrator
+# Version: v.0.3.9.0
 
 import logging
 from typing import Any, Dict, List, Optional
 
-# Импорты внутренних компонентов системы
+# Internal system component imports
 from app.configuration.security import SecureContext
 from app.engine.loader import ModuleManager
 from app.engine.validator import XMLValidator
 from app.engine.resolver import ArgumentResolver
 from app.communication.session import HikvisionClient
 
-# Настройка логгера для данного модуля
+# Logger configuration for the module
 logger = logging.getLogger(__name__)
 
 class Orchestrator:
     """
-    Ядро системы. Координирует работу всех слоев: 
-    загрузку, валидацию и выполнение команд.
+    System core. Coordinates work across all layers: 
+    loading, validation, and command execution.
     """
     
     def __init__(
@@ -31,30 +31,30 @@ class Orchestrator:
         base_context: SecureContext
     ):
         """
-        Инициализация оркестратора через внедрение зависимостей.
+        Initialize orchestrator via dependency injection.
         
-        -- loader: Компонент для поиска и загрузки модулей.
-        -- validator: Компонент для XSD-валидации XML-команд.
-        -- resolver: Компонент для обработки аргументов команд.
-        -- client: Сетевой клиент для связи с оборудованием.
-        -- base_context: Базовый контекст безопасности из конфигурации.
+        -- loader: Component for searching and loading modules.
+        -- validator: Component for XSD validation of XML commands.
+        -- resolver: Component for processing command arguments.
+        -- client: Network client for hardware communication.
+        -- base_context: Base security context from configuration.
         """
-        logger.debug("Инициализация Orchestrator: старт")
+        logger.debug("Orchestrator initialization: start")
         self._loader = loader
         self._validator = validator
         self._resolver = resolver
         self._client = client
         self._base_context = base_context
-        self._version = "0.3.8.0"
-        logger.info("Orchestrator успешно инициализирован.")
+        self._version = "0.3.9.0"
+        logger.info("Orchestrator successfully initialized.")
 
     @classmethod
     def bootstrap(cls, base_context: SecureContext) -> "Orchestrator":
         """
-        Фабричный метод сборки зависимостей (Composition Root).
-        Инициализирует все подсистемы и возвращает готовый к работе Оркестратор.
+        Factory method for dependency assembly (Composition Root).
+        Initializes all subsystems and returns a ready-to-use Orchestrator.
         """
-        logger.debug("Вызов фабричного метода bootstrap: сборка компонентов")
+        logger.debug("Bootstrap factory method called: assembling components")
         
         loader = ModuleManager()
         validator = XMLValidator()
@@ -76,35 +76,24 @@ class Orchestrator:
         connect_str: Optional[str] = None
     ) -> bool:
         """
-        Выполняет команду в автоматическом режиме (без интерактивного терминала).
-        
-        -- module_name: Имя модуля для выполнения.
-        -- params: Словарь параметров.
-        -- connect_str: Опциональная строка подключения вида user:password@host
+        Executes a command in automatic mode (without interactive terminal).
         """
-        logger.info(f"Headless: запрос модуля '{module_name}'")
-        logger.debug(f"Headless параметры: {params}")
+        logger.info(f"Headless: request for module '{module_name}'")
+        logger.debug(f"Headless parameters: {params}")
 
-        # Парсинг опциональной строки подключения --connect
         if connect_str:
-            logger.debug("Парсинг кастомных учетных данных через строковые методы")
-            
-            # rpartition('@') безопасно отделяет хост, даже если пароль содержит '@'
+            logger.debug("Parsing custom credentials via string methods")
             credentials, separator, host = connect_str.rpartition('@')
-            
-            # partition(':') отделяет имя пользователя от пароля по первому двоеточию
             user, colon, password = credentials.partition(':')
             
-            # Валидация успешности парсинга всех компонентов
             if not (separator and colon and host and user and password):
-                logger.error("Неверный формат флага --connect. Ожидается user:password@host")
+                logger.error("Invalid --connect format. Expected user:password@host")
                 return False
         else:
             host = self._base_context.host
             user = self._base_context.user
             password = self._base_context.password
 
-        # Создаем обновленный контекст для конкретной команды
         context = SecureContext(
             host=host,
             user=user,
@@ -118,48 +107,59 @@ class Orchestrator:
 
     def run_command(self, context: SecureContext) -> bool:
         """
-        Основной метод выполнения команды.
+        Main method for command execution. Updated to support new Resolver contract.
         """
-        logger.debug(f"Выполнение команды: {context.module_name}")
+        logger.debug(f"Executing command: {context.module_name}")
         
+        # Load the module by name
         module_data = self._loader.get_module(context.module_name)
         if not module_data:
-            logger.error(f"Модуль {context.module_name} не найден")
+            logger.error(f"Module {context.module_name} not found")
             return False
 
+        # Validate module structure against XSD
         if not self._validator.validate(module_data):
-             logger.error(f"Модуль {context.module_name} не прошел валидацию")
+             logger.error(f"Module {context.module_name} failed validation")
              return False
 
-        payload = self._resolver.resolve(module_data, context.params)
-        response = self._client.send(payload, context)
+        # Resolve command metadata and prepare final payload
+        # Expected return: (http_method, isapi_url, xml_body)
+        method, url, payload = self._resolver.resolve(module_data, context.params)
+        
+        # Dispatch request with explicit HTTP method and URL
+        response = self._client.send(
+            method=method,
+            url=url,
+            payload=payload,
+            context=context
+        )
         
         return response is not None
 
     def discover_modules(self) -> List[str]:
         """
-        Сканирует директорию на наличие новых XML-модулей.
+        Scans directory for new XML modules.
         """
-        logger.info("Поиск новых модулей в системе...")
+        logger.info("Searching for new modules in the system...")
         modules = self._loader.discover_modules()
-        logger.debug(f"Найдено модулей: {len(modules)}")
+        logger.debug(f"Modules found: {len(modules)}")
         return modules
 
     def reload_modules(self) -> bool:
         """
-        Принудительная перезагрузка списка модулей.
+        Forced reload of the module list.
         """
-        logger.info("Инициирована перезагрузка модулей...")
+        logger.info("Module reload initiated...")
         result = self._loader.reload_modules()
         if result:
-            logger.info("Модули успешно перезагружены.")
+            logger.info("Modules successfully reloaded.")
         return result
 
     def get_status(self) -> Dict[str, str]:
         """
-        Возвращает текущую версию и состояние готовности системы.
+        Returns current version and system readiness state.
         """
-        logger.debug("Запрос статуса системы")
+        logger.debug("System status request")
         return {
             "version": self._version,
             "status": "ready"

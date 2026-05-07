@@ -1,3 +1,8 @@
+ #Имя файла: loader.py
+# Путь: app/engine/logger.py
+# Кодовое название: ModuleManager
+# Версия: 0.3.5
+
 import logging
 import json
 from pathlib import Path

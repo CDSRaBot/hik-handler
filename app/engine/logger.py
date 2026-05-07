@@ -1,5 +1,5 @@
 # Имя файла: logger.py
-# Путь: app/utils/logger.py
+# Путь: app/engine/logger.py
 # Кодовое название: LogManager
 # Версия: 0.3.6
 
