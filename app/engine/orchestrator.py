@@ -1,5 +1,5 @@
 # Имя файла: orchestrator.py
-# Путь: app/engine/orchestrator.py
+# Путь: app/engine/orchestrator.py - from GIT
 # Кодовое название: Orchestrator
 # Версия: v.0.3.8.0
 
