@@ -1,7 +1,7 @@
 # File name: orchestrator.py
 # path: app/engine/orchestrator.py
 # Internal name: Orchestrator
-# Version: v.0.3.9.0
+# Version: v.0.5.2.0
 
 import logging
 from typing import Any, Dict, List, Optional
@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 class Orchestrator:
     """
-    System core. Coordinates work across all layers: 
-    loading, validation, and command execution.
+    System core orchestrator. 
+    Coordinates data flow between loader, validator, resolver, and client.
     """
     
     def __init__(
@@ -32,29 +32,22 @@ class Orchestrator:
     ):
         """
         Initialize orchestrator via dependency injection.
-        
-        -- loader: Component for searching and loading modules.
-        -- validator: Component for XSD validation of XML commands.
-        -- resolver: Component for processing command arguments.
-        -- client: Network client for hardware communication.
-        -- base_context: Base security context from configuration.
         """
-        logger.debug("Orchestrator initialization: start")
+        logger.debug("Orchestrator initialization started (DEBUG)")
         self._loader = loader
         self._validator = validator
         self._resolver = resolver
         self._client = client
         self._base_context = base_context
-        self._version = "0.3.9.0"
-        logger.info("Orchestrator successfully initialized.")
+        self._version = "0.5.2.0"
+        logger.info(f"Orchestrator engine v{self._version} initialized successfully.")
 
     @classmethod
     def bootstrap(cls, base_context: SecureContext) -> "Orchestrator":
         """
-        Factory method for dependency assembly (Composition Root).
-        Initializes all subsystems and returns a ready-to-use Orchestrator.
+        Composition Root. Assembles all subsystems into a functional Orchestrator.
         """
-        logger.debug("Bootstrap factory method called: assembling components")
+        logger.debug("Bootstrap: initializing subsystem instances")
         
         loader = ModuleManager()
         validator = XMLValidator()
@@ -76,57 +69,75 @@ class Orchestrator:
         connect_str: Optional[str] = None
     ) -> bool:
         """
-        Executes a command in automatic mode (without interactive terminal).
+        High-level entry point for non-interactive command execution.
         """
-        logger.info(f"Headless: request for module '{module_name}'")
-        logger.debug(f"Headless parameters: {params}")
+        logger.info(f"Executing headless command for module: '{module_name}'")
+        logger.debug(f"Parameters provided: {params}")
 
-        if connect_str:
-            logger.debug("Parsing custom credentials via string methods")
-            credentials, separator, host = connect_str.rpartition('@')
-            user, colon, password = credentials.partition(':')
-            
-            if not (separator and colon and host and user and password):
-                logger.error("Invalid --connect format. Expected user:password@host")
-                return False
-        else:
-            host = self._base_context.host
-            user = self._base_context.user
-            password = self._base_context.password
-
-        context = SecureContext(
-            host=host,
-            user=user,
-            password=password,
-            timeout=self._base_context.timeout,
-            module_name=module_name,
-            params=params
-        )
+        context = self._prepare_context(module_name, params, connect_str)
+        
+        if not context:
+            logger.error(f"Failed to prepare context for module '{module_name}'")
+            return False
 
         return self.run_command(context)
 
+    def _prepare_context(
+        self, 
+        module_name: str, 
+        params: Dict[str, str], 
+        connect_str: Optional[str]
+    ) -> Optional[SecureContext]:
+        """
+        Internal wrapper for context creation.
+        Delegates the complexity of parsing and merging to SecureContext factory.
+        """
+        logger.debug("Orchestrator delegating context creation to SecureContext factory")
+        
+        try:
+            context = SecureContext.create_from_input(
+                base=self._base_context,
+                module_name=module_name,
+                params=params,
+                connect_str=connect_str
+            )
+            logger.debug("SecureContext successfully created via factory")
+            return context
+        except Exception as e:
+            logger.error(f"Context factory error: {str(e)}")
+            return None
+
     def run_command(self, context: SecureContext) -> bool:
         """
-        Main method for command execution. Updated to support new Resolver contract.
+        Executes the full command cycle: Load -> Validate -> Resolve -> Send.
+        Updated: Includes a memory-cache availability check before disk access.
         """
-        logger.debug(f"Executing command: {context.module_name}")
+        logger.info(f"Running command lifecycle: {context.module_name}")
         
-        # Load the module by name
-        module_data = self._loader.get_module(context.module_name)
-        if not module_data:
-            logger.error(f"Module {context.module_name} not found")
+        # Step 0: Quick availability check using memory cache (cheap operation)
+        if context.module_name not in self.get_available_modules():
+            logger.error(f"Module '{context.module_name}' is not in the indexed library. Skipping execution.")
             return False
 
-        # Validate module structure against XSD
+        # 1. Loading (Expensive disk read)
+        logger.debug(f"Step 1: Loading module '{context.module_name}' content from disk")
+        module_data = self._loader.get_module(context.module_name)
+        if not module_data:
+            logger.error(f"Module '{context.module_name}' content could not be read")
+            return False
+
+        # 2. Validation
+        logger.debug("Step 2: Validating XML structure against schema")
         if not self._validator.validate(module_data):
-             logger.error(f"Module {context.module_name} failed validation")
+             logger.error(f"Validation failed for module '{context.module_name}'")
              return False
 
-        # Resolve command metadata and prepare final payload
-        # Expected return: (http_method, isapi_url, xml_body)
+        # 3. Resolution (Metadata + Body)
+        logger.debug("Step 3: Resolving arguments and extracting ISAPI metadata")
         method, url, payload = self._resolver.resolve(module_data, context.params)
         
-        # Dispatch request with explicit HTTP method and URL
+        # 4. Transmission
+        logger.info(f"Step 4: Dispatching {method} request to {url}")
         response = self._client.send(
             method=method,
             url=url,
@@ -134,33 +145,51 @@ class Orchestrator:
             context=context
         )
         
-        return response is not None
+        if response is not None:
+            logger.info(f"Command '{context.module_name}' executed successfully.")
+            return True
+            
+        logger.error(f"Command '{context.module_name}' failed during transmission.")
+        return False
+
+    def get_available_modules(self) -> List[str]:
+        """
+        Returns a list of modules currently indexed in memory.
+        Fast, non-blocking call for status checks and validation.
+        """
+        logger.debug("Retrieving available modules from memory cache")
+        return self._loader.get_available_modules()
 
     def discover_modules(self) -> List[str]:
         """
-        Scans directory for new XML modules.
+        Performs a full scan of the module directory (expensive).
+        Updates the index and cache.
         """
-        logger.info("Searching for new modules in the system...")
-        modules = self._loader.discover_modules()
-        logger.debug(f"Modules found: {len(modules)}")
-        return modules
+        logger.info("Performing full module discovery (disk scan)")
+        return self._loader.discover_modules()
 
     def reload_modules(self) -> bool:
         """
-        Forced reload of the module list.
+        Triggers a fresh scan of the module directory.
         """
-        logger.info("Module reload initiated...")
-        result = self._loader.reload_modules()
-        if result:
-            logger.info("Modules successfully reloaded.")
-        return result
+        logger.info("Forced module cache invalidation initiated")
+        return self._loader.reload_modules()
 
-    def get_status(self) -> Dict[str, str]:
+    def get_status(self) -> Dict[str, Any]:
         """
-        Returns current version and system readiness state.
+        System diagnostics and versioning. 
+        Uses cached data for performance metrics.
         """
-        logger.debug("System status request")
+        logger.debug("Gathering orchestrator status and metrics")
+        
+        # Using the fast cached method as requested by the architect
+        available_modules = self.get_available_modules()
+        
         return {
             "version": self._version,
-            "status": "ready"
+            "engine": "hik-handler-core",
+            "status": "operational",
+            "metrics": {
+                "modules_loaded": len(available_modules)
+            }
         }
