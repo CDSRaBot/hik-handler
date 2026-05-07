@@ -1,5 +1,5 @@
 # Имя файла: cli_terminal.py
-# Путь: app/user_interface/cli_terminal.py
+# Путь: app/user_interface/cli_terminal.py - этот файл из репозитория Git
 # Кодовое название: Terminal Interface
 # Версия: 0.3.5.1
 
