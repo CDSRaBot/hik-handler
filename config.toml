@@ -1,0 +1,28 @@
+# Имя файла: config.toml
+# Кодовое название: Главный конфигуратор системы
+# Описание: Файл настроек проекта Hik-handler. 
+# Версия: 0.3.6
+
+[network]
+# Настройки подключения к устройству. 
+# Эти поля строго соответствуют аргументам класса SecureContext.
+host = "192.168.1.64"
+user = "admin"
+password = ""
+timeout = 10
+
+[paths]
+# Локальные пути для работы Оркестратора и Менеджера модулей.
+# Разрешаются с использованием pathlib.Path для кроссплатформенности.
+modules_dir = "modules"
+validation_schema = "schema/module_schema.xsd"
+log_dir = "logs"
+sandbox_dir = "sandbox" # Директория для безопасного сохранения файлов от камер (превенция Path Traversal)
+
+[logging]
+# Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+level = "DEBUG"
+# Максимальный размер файла лога в Мб до начала ротации
+max_size_mb = 5
+# Количество хранимых архивных файлов лога
+backup_count = 3
