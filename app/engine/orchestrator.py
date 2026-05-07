@@ -26,9 +26,8 @@ logger = logging.getLogger(__name__)
 
 class Orchestrator:
     """
-    System core orchestrator. 
-    Coordinates data flow between loader, validator, resolver, and client.
-    Acting as a Central Dispatcher in a Clean Architecture.
+    Main Orchestrator class.
+    Implements the mediator pattern to decouple system components.
     """
     
     def __init__(
@@ -55,8 +54,8 @@ class Orchestrator:
         self._resolver = resolver
         self._client = client
         self._base_context = base_context
-        logger.info(f"Orchestrator engine v{self._version} initialized successfully.")
         self._version = "1.0.0"
+        logger.info(f"Orchestrator engine v{self._version} is now frozen and active.")
 
     @classmethod
     def bootstrap(cls, base_context: SecureContext) -> "Orchestrator":
@@ -144,7 +143,7 @@ class Orchestrator:
             logger.error(f"Lifecycle Error: Module '{context.module_name}' is not indexed.")
             return False
 
-        # Step 1: Loading (Data Acquisition)
+        # Step 1: Load Module (Disk I/O)
         logger.debug(f"Pipeline Step 1: Reading XML content for '{context.module_name}'")
         module_data = self._loader.get_module(context.module_name)
         if not module_data:
@@ -209,7 +208,7 @@ class Orchestrator:
         return {
             "version": self._version,
             "engine": "hik-handler-core",
-            "status": "operational",
+            "status": "frozen",
             "metrics": {
                 "indexed_modules": len(self.get_available_modules())
             }
