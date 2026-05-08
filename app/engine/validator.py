@@ -1,86 +1,98 @@
+# validator.py
+# path: hik-handler/data_plane/validator.py
+# context: XML Validation Service
+# version: 1.0.0 (Frozen)
+
 import logging
+import os
 from lxml import etree
 from defusedxml import lxml as safe_lxml
 
-# Инициализация логгера модуля для отслеживания операций валидации
+# Initialize module logger for tracking validation operations
 logger = logging.getLogger(__name__)
 
 
 class XMLValidator:
     """
-    Класс-сервис для проверки XML-документов на соответствие XSD-схеме.
-    Обеспечивает кэширование скомпилированной схемы для повышения
-    производительности при массовой обработке модулей.
+    Service class for validating XML documents against an XSD schema.
+    Provides caching of the compiled schema to improve performance 
+    during mass processing of modules.
     """
 
     def __init__(self, xsd_path: str):
         """
-        Инициализирует экземпляр валидатора и подготавливает схему.
+        Initializes the validator instance and prepares the schema.
         
-        :param xsd_path: Путь к файлу XSD-схемы (напр. /schema/module_schema.xsd).
+        :param xsd_path: Path to the XSD schema file.
         """
         self._xsd_path = xsd_path
         self._schema = None
         
-        # Предварительная загрузка и компиляция схемы в память
+        # Initial schema compilation
         self._initialize_schema()
 
     def _initialize_schema(self) -> None:
         """
-        Внутренний метод для загрузки и компиляции XSD-схемы в объект lxml.
-        Выполняется один раз при создании экземпляра.
+        Internal method for loading and compiling the XSD schema.
+        Executed once during instance creation to provide caching.
         """
-        logger.debug(f"Загрузка и компиляция XSD-схемы: {self._xsd_path}")
+        logger.debug(f"Validating XSD path: {self._xsd_path}")
+        
+        # Ensure the schema file actually exists
+        if not os.path.exists(self._xsd_path):
+            logger.error(f"XSD schema not found: {self._xsd_path}")
+            self._schema = None
+            return
+
         try:
+            logger.debug(f"Compiling XSD schema from {self._xsd_path}")
             with open(self._xsd_path, 'rb') as f:
-                # Чтение сырых байтов для корректной обработки кодировок
-                schema_doc = etree.XML(f.read())
-                # Компиляция в объект XMLSchema (тяжелая операция)
-                self._schema = etree.XMLSchema(schema_doc)
-            logger.info(f"Схема {self._xsd_path} успешно загружена в память")
+                schema_root = etree.XML(f.read())
+                self._schema = etree.XMLSchema(schema_root)
+            logger.info("XSD schema successfully compiled and cached in memory")
         except Exception as e:
-            # Критическая ошибка: без схемы работа системы невозможна
-            logger.critical(f"Сбой инициализации схемы {self._xsd_path}: {e}")
-            raise
+            logger.error(f"Critical failure during schema initialization: {e}")
+            self._schema = None
 
     def validate(self, xml_path: str) -> tuple[bool, str]:
         """
-        Выполняет валидацию XML-файла по скомпилированной схеме из памяти.
+        Validates an XML file against the cached XSD schema.
         
-        :param xml_path: Путь к проверяемому XML-файлу модуля.
-        :return: Кортеж (bool, str), где второй элемент — описание ошибки.
+        :param xml_path: Full path to the XML module to be checked.
+        :return: Tuple (is_valid, error_message).
         """
-        logger.info(f"Начата валидация модуля: {xml_path}")
+        logger.info(f"Starting validation for: {xml_path}")
         
+        # Check if service is ready
         if not self._schema:
-            logger.error("Попытка валидации без инициализированной схемы")
-            return False, "Валидатор не инициализирован: отсутствует схема"
+            logger.error("Validation rejected: Schema not initialized")
+            return False, "Validator state error: missing schema"
 
         try:
-            # Безопасный парсинг XML (защита от XXE и внешних сущностей)
-            logger.debug(f"Безопасный парсинг {xml_path}")
+            # Safe XML parsing with XXE protection
+            logger.debug("Executing safe XML parse")
             tree = safe_lxml.parse(xml_path)
 
-            # Проверка документа на соответствие правилам XSD
+            # Perform schema validation
             self._schema.assertValid(tree)
             
-            logger.info(f"Модуль {xml_path} прошел проверку успешно")
+            logger.info(f"Validation successful for {xml_path}")
             return True, ""
 
         except (etree.XMLSyntaxError, etree.DocumentInvalid) as e:
-            # Ошибки структуры XML или несоответствие схеме
-            error_msg = f"Ошибка структуры или схемы в {xml_path}: {str(e)}"
-            logger.debug(f"Технические детали ошибки: {error_msg}")
+            # Handle malformed XML or schema violations
+            error_msg = f"XML/XSD mismatch in {xml_path}: {str(e)}"
+            logger.debug(f"Validation details: {error_msg}")
             return False, error_msg
 
-        except FileNotFoundError as e:
-            # Файл модуля отсутствует на диске
-            error_msg = f"Файл модуля не найден: {e.filename}"
+        except FileNotFoundError:
+            # Handle missing XML file
+            error_msg = f"Target XML file not found: {xml_path}"
             logger.error(error_msg)
             return False, error_msg
 
         except Exception as e:
-            # Прочие системные исключения
-            error_msg = f"Критический сбой при валидации {xml_path}: {str(e)}"
-            logger.error(error_msg, exc_info=True)
+            # General system exceptions
+            error_msg = f"Internal error during validation: {str(e)}"
+            logger.exception(error_msg)
             return False, error_msg
