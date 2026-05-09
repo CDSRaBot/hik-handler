@@ -2,7 +2,7 @@
 File: orchestrator.py
 Path: app/engine/orchestrator.py
 Codename: Orchestrator
-Version: v.1.0.0 (Frozen)
+Version: v.1.0.2 (Logging Optimized)
 
 Description:
     Central coordination engine for the Hik-handler utility. 
@@ -14,7 +14,6 @@ import logging
 from typing import Any, Dict, List, Optional
 
 # Internal system component imports
-# Note: SecureContext.create_from_input is expected to be implemented in security.py
 from app.configuration.security import SecureContext
 from app.engine.loader import ModuleManager
 from app.engine.validator import XMLValidator
@@ -45,17 +44,17 @@ class Orchestrator:
             loader (ModuleManager): Handles XML module file operations.
             validator (XMLValidator): Validates XML against XSD schemas.
             resolver (ArgumentResolver): Injects params and extracts ISAPI metadata.
-            client (HikvisionClient): Handles network communication with devices.
+            client (HikvisionClient): Default network client.
             base_context (SecureContext): Global/Default connection settings.
         """
-        logger.debug("Orchestrator: constructor call (DEBUG)")
         self._loader = loader
         self._validator = validator
         self._resolver = resolver
         self._client = client
         self._base_context = base_context
-        self._version = "1.0.0"
-        logger.info(f"Orchestrator engine v{self._version} is now frozen and active.")
+        self._version = "1.0.2"
+        
+        logger.debug(f"Orchestrator constructor: instance created (v{self._version})")
 
     @classmethod
     def bootstrap(cls, base_context: SecureContext) -> "Orchestrator":
@@ -63,13 +62,14 @@ class Orchestrator:
         Factory method (Composition Root) to assemble the orchestrator 
         with all necessary subsystems.
         """
-        logger.debug("Orchestrator: bootstrapping subsystems")
+        logger.debug("Orchestrator: bootstrapping subsystems (loader, validator, resolver, client)")
         
         return cls(
             loader=ModuleManager(),
             validator=XMLValidator(),
             resolver=ArgumentResolver(),
-            client=HikvisionClient(),
+            # Initialized with base context for default state
+            client=HikvisionClient(base_context),
             base_context=base_context
         )
 
@@ -90,14 +90,14 @@ class Orchestrator:
         Returns:
             bool: Success status of the command execution.
         """
-        logger.info(f"Headless Execution: Starting for '{module_name}'")
-        logger.debug(f"Input Parameters: {params}")
-
-        # Delegation of context preparation
+        logger.info(f"Execution: Starting task '{module_name}' in headless mode.")
+        
+        # TRANSFORMATION POINT: 
+        # We create a specific task context derived from base + arguments
         context = self._prepare_context(module_name, params, connect_str)
         
         if not context:
-            logger.error(f"Execution Aborted: Could not finalize context for '{module_name}'")
+            logger.error(f"Execution Aborted: Fails to generate SecureContext for '{module_name}'")
             return False
 
         return self.run_command(context)
@@ -110,105 +110,101 @@ class Orchestrator:
     ) -> Optional[SecureContext]:
         """
         Private helper to generate a command-specific SecureContext.
-        Uses the factory contract in the security module.
+        This is where 'params' and 'overrides' are merged with 'base_context'.
         """
-        logger.debug("Orchestrator: requesting SecureContext from factory (Data Plane)")
+        logger.debug(f"Context: Merging task parameters for module '{module_name}'")
         
         try:
-            # Assumes SecureContext.create_from_input handles defaults and parsing
+            # SecureContext.create_from_input (in security.py) handles the actual merging logic
             context = SecureContext.create_from_input(
                 base=self._base_context,
                 module_name=module_name,
                 params=params,
                 connect_str=connect_str
             )
-            logger.debug("Orchestrator: context object successfully received")
+            logger.debug(f"Context: SecureContext for '{module_name}' successfully prepared.")
             return context
         except Exception as e:
-            logger.error(f"Context Factory failure: {str(e)}")
+            logger.error(f"Context: Generation failure - {str(e)}")
             return None
 
     def run_command(self, context: SecureContext) -> bool:
         """
         The main sequential pipeline for command execution.
-        
-        Flow: Index Check -> Load -> Validate -> Resolve -> Dispatch.
+        Uses the provided 'context' which contains specific arguments.
         """
-        logger.info(f"Pipeline: Running lifecycle for module '{context.module_name}'")
+        logger.info(f"Pipeline: Running lifecycle for '{context.module_name}'")
         
         # Step 0: Warm Cache Validation
-        # Check against indexed modules in memory to prevent invalid disk hits
         available = self.get_available_modules()
         if context.module_name not in available:
-            logger.error(f"Lifecycle Error: Module '{context.module_name}' is not indexed.")
+            logger.error(f"Pipeline Error: Module '{context.module_name}' is not found in index.")
             return False
 
-        # Step 1: Load Module (Disk I/O)
-        logger.debug(f"Pipeline Step 1: Reading XML content for '{context.module_name}'")
+        # Step 1: Load Module
+        logger.debug(f"Step 1: Fetching module content for '{context.module_name}'")
         module_data = self._loader.get_module(context.module_name)
         if not module_data:
-            logger.error(f"Lifecycle Error: Module data for '{context.module_name}' is empty.")
+            logger.error(f"Pipeline Error: Data for module '{context.module_name}' is empty.")
             return False
 
         # Step 2: XSD Validation
-        logger.debug("Pipeline Step 2: Structural validation against schema")
+        logger.debug("Step 2: Performing XML structural validation against XSD.")
         if not self._validator.validate(module_data):
-             logger.error(f"Lifecycle Error: XML validation failed for '{context.module_name}'")
+             logger.error(f"Pipeline Error: XML validation failed for '{context.module_name}'.")
              return False
 
-        # Step 3: Argument Resolution and Metadata Extraction
-        # Returns: (http_method, path_url, rendered_body)
-        logger.debug("Pipeline Step 3: Resolving placeholders and ISAPI metadata")
+        # Step 3: Argument Resolution
+        # Here we use 'context.params' which were injected during _prepare_context
+        logger.debug("Step 3: Resolving placeholders and extracting ISAPI metadata.")
         method, url, payload = self._resolver.resolve(module_data, context.params)
         
         # Step 4: Network Dispatch
-        logger.info(f"Pipeline Step 4: Sending {method} request to '{url}'")
-        response = self._client.send(
-            method=method,
-            url=url,
-            payload=payload,
-            context=context
-        )
+        logger.info(f"Network: Dispatching {method} request to '{url}'")
         
-        if response is not None:
-            logger.info(f"Lifecycle Success: Command '{context.module_name}' finished.")
-            return True
+        try:
+            # Instantiate a transient client for the specific context of this command.
+            # This ensures that custom credentials or hosts are applied correctly.
+            task_client = HikvisionClient(context)
+            with task_client as conn:
+                response = conn.execute(
+                    method=method,
+                    url_path=url,
+                    payload=payload
+                )
             
-        logger.error(f"Lifecycle Failure: No response for '{context.module_name}'")
+            if response:
+                logger.info(f"Result: Task '{context.module_name}' completed successfully. Response length: {len(response)} chars.")
+                logger.debug(f"Raw response trace: {response}")
+                return True
+        except Exception as e:
+            logger.error(f"Network: Dispatch failure - {str(e)}")
+            return False
+            
+        logger.error(f"Result: Lifecycle failure for '{context.module_name}' - No response received.")
         return False
 
     def get_available_modules(self) -> List[str]:
-        """
-        Returns a list of modules currently indexed in the memory cache.
-        Does not perform a disk scan.
-        """
-        logger.debug("Orchestrator: fetching indexed modules from cache")
+        """Returns indexed modules from memory."""
+        logger.debug("Orchestrator: Fetching available modules from cache.")
         return self._loader.get_available_modules()
 
     def discover_modules(self) -> List[str]:
-        """
-        Performs a full scan of the modules directory and updates the index.
-        """
-        logger.info("Orchestrator: performing full disk discovery of modules")
+        """Performs disk scan and updates index."""
+        logger.info("Discovery: Initiating full modules scan on disk.")
         return self._loader.discover_modules()
 
     def reload_modules(self) -> bool:
-        """
-        Forced refresh of the module indexing system.
-        """
-        logger.info("Orchestrator: manual module reload triggered")
+        """Forced refresh of the indexing system."""
+        logger.info("System: Manual module index reload triggered.")
         return self._loader.reload_modules()
 
     def get_status(self) -> Dict[str, Any]:
-        """
-        Returns system metadata and health metrics.
-        """
-        logger.debug("Orchestrator: gathering system status report")
-        
+        """Returns health metrics."""
+        logger.debug("System: Gathering status report.")
         return {
             "version": self._version,
             "engine": "hik-handler-core",
-            "status": "frozen",
             "metrics": {
                 "indexed_modules": len(self.get_available_modules())
             }
