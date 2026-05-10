@@ -1,12 +1,12 @@
 """
-File: app/network/session.py
-Path: app/network/session.py
+File: app/communication/session.py
+Path: app/communication/session.py
 Code name: Network Session Manager
-Version: v.1.0.1 Frozen
+Version: v.1.0.2 
 
 Network interaction module (Network Session).
 Implements the ISAPI transport layer with Digest authentication support.
-This version is frozen and serves as the reference implementation for the network layer.
+This version includes strict content-type verification to prevent HTML injection into the XML parser.
 """
 
 import logging
@@ -79,7 +79,7 @@ class HikvisionClient:
             str: The response body as text.
 
         Raises:
-            HikvisionNetworkError: In case of connection issues or protocol errors.
+            HikvisionNetworkError: In case of connection issues, protocol errors, or invalid content type.
         """
         logger.debug("Preparing to execute method: %s. Path: %s", method, url_path)
         
@@ -96,7 +96,7 @@ class HikvisionClient:
         logger.debug("Request details: URL=%s, Headers=%s", full_url, request_headers)
         
         try:
-            # Note: payload must be a string or None at this stage
+            # Note: payload must be a string or None at this stage to avoid path-parsing issues
             response = self._session.request(
                 method=method,
                 url=full_url,
@@ -108,6 +108,16 @@ class HikvisionClient:
             
             # Check for HTTP errors (4xx, 5xx)
             response.raise_for_status()
+
+            # Guard Clause: Verify that the response is actually XML
+            # Some devices return 200 OK with HTML login page when session expires
+            content_type = response.headers.get('Content-Type', '').lower()
+            if 'xml' not in content_type:
+                logger.error("Unexpected content type received: %s. Expected XML.", content_type)
+                raise HikvisionNetworkError(
+                    f"Invalid response format: expected XML, got {content_type}. "
+                    "The device might have returned an HTML error page."
+                )
             
             logger.debug("Request executed successfully. Status: %s", response.status_code)
             return response.text

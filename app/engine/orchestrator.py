@@ -1,13 +1,14 @@
 """
 File: orchestrator.py
-Path: src/core/orchestrator.py
+Path: app/engine/orchestrator.py
 Codename: Orchestrator
-Version: v.1.0.3 (Terminal Ready)
+Version: v.1.0.4 (Contract Synced)
 
 Description:
     Central coordination engine for the Hik-handler utility. 
     Manages the lifecycle of a command execution by orchestrating 
     loading, validation, resolution, and transmission.
+    Synchronized with HikvisionClient v.1.0.2.
 """
 
 import logging
@@ -18,7 +19,7 @@ from app.configuration.security import SecureContext
 from app.engine.loader import ModuleManager
 from app.engine.validator import XMLValidator
 from app.engine.resolver import ArgumentResolver
-from app.communication.session import HikvisionClient
+from app.communication.session import HikvisionClient, HikvisionNetworkError
 
 # Logger configuration for the module
 logger = logging.getLogger(__name__)
@@ -52,7 +53,7 @@ class Orchestrator:
         self._resolver = resolver
         self._client = client
         self._base_context = base_context
-        self._version = "1.0.3"
+        self._version = "1.0.4"
         
         logger.debug(f"Orchestrator constructor: instance created (v{self._version})")
 
@@ -115,7 +116,7 @@ class Orchestrator:
         logger.debug(f"Context: Merging task parameters for module '{module_name}'")
         
         try:
-            # SecureContext.create_from_input (in security.py) handles the actual merging logic
+            # SecureContext.create_from_input handles the actual merging logic
             context = SecureContext.create_from_input(
                 base=self._base_context,
                 module_name=module_name,
@@ -131,7 +132,13 @@ class Orchestrator:
     def run_command(self, context: SecureContext) -> bool:
         """
         The main sequential pipeline for command execution.
-        Uses the provided 'context' which contains specific arguments.
+        
+        Steps:
+            0. Validation against indexed modules.
+            1. Loading module XML from storage.
+            2. Structural validation against XSD.
+            3. Metadata extraction and placeholder resolution.
+            4. Network transmission via ISAPI client.
         """
         logger.info(f"Pipeline: Running lifecycle for '{context.module_name}'")
         
@@ -148,14 +155,13 @@ class Orchestrator:
             logger.error(f"Pipeline Error: Data for module '{context.module_name}' is empty.")
             return False
 
-        # Step 2: XSD Validation
+        # Step 2: XSD Validation (Step 0 Security check)
         logger.debug("Step 2: Performing XML structural validation against XSD.")
         if not self._validator.validate(module_data):
              logger.error(f"Pipeline Error: XML validation failed for '{context.module_name}'.")
              return False
 
         # Step 3: Argument Resolution
-        # Here we use 'context.params' which were injected during _prepare_context
         logger.debug("Step 3: Resolving placeholders and extracting ISAPI metadata.")
         method, url, payload = self._resolver.resolve(module_data, context.params)
         
@@ -163,25 +169,28 @@ class Orchestrator:
         logger.info(f"Network: Dispatching {method} request to '{url}'")
         
         try:
-            # Instantiate a transient client for the specific context of this command.
-            # This ensures that custom credentials or hosts are applied correctly.
+            # Instantiate a transient client for the task-specific context.
+            # Context manager (with) is mandatory for HikvisionClient v.1.0.2.
             task_client = HikvisionClient(context)
             with task_client as conn:
-                response = conn.execute(
+                response: str = conn.execute(
                     method=method,
                     url_path=url,
                     payload=payload
                 )
             
+            # Since client v.1.0.2 returns text and checks Content-Type:
             if response:
-                logger.info(f"Result: Task '{context.module_name}' completed successfully. Response length: {len(response)} chars.")
-                logger.debug(f"Raw response trace: {response}")
+                logger.info(f"Result: Task '{context.module_name}' completed successfully.")
+                logger.debug(f"Response (length: {len(response)}): {response}")
                 return True
+                
+        except HikvisionNetworkError as ne:
+            logger.error(f"Network Error: ISAPI request failed - {str(ne)}")
         except Exception as e:
-            logger.error(f"Network: Dispatch failure - {str(e)}")
-            return False
+            logger.error(f"Pipeline Error: Unexpected error during dispatch - {str(e)}")
             
-        logger.error(f"Result: Lifecycle failure for '{context.module_name}' - No response received.")
+        logger.error(f"Result: Lifecycle failure for '{context.module_name}'.")
         return False
 
     def get_available_modules(self) -> List[str]:
