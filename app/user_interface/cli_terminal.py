@@ -1,7 +1,7 @@
 # File: cli_terminal.py
 # Path: app/user_interface/cli_terminal.py
 # Internal Name: Terminal Interface
-# Version: 1.0.0
+# Version: 1.0.0 Frozen
 
 import logging
 import shlex
