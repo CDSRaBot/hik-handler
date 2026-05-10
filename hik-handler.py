@@ -1,49 +1,57 @@
 """
-Имя файла: hik-handler.py
-Путь: /hik-handler.py
-Кодовое название: ENTRY_POINT
-Версия: v.0.3.6.0
+File: hik-handler.py
+Path: /hik-handler.py
+Code name: ENTRY_POINT
+Version: v.1.0.1
 """
 
 import logging
 import sys
 from app.engine.orchestrator import Orchestrator
+from app.engine.logger import setup_logger
 
-# Настройка базового логгера для точки входа
+# Initial logger for entry point bootstrap
+# Note: It will use default settings until setup_logger is called
 logger = logging.getLogger(__name__)
 
 def main():
     """
-    Основная функция запуска приложения.
-    Инициализирует ядро через фабричный метод bootstrap и запускает цикл.
+    Main application entry point.
+    Coordinates core bootstrap, infrastructure setup, and command execution.
     """
-    logger.info("Запуск приложения Hik-handler...")
+    logger.info("Initializing Hik-handler system...")
     
     try:
-        logger.info("--- Старт сессии Hik-handler ---")
-        
-        # Инициализация ядра системы (Control Plane)
-        # Метод bootstrap берет на себя создание NetworkClient и ConfigManager
+        # Step 1: Bootstrap the core to load configuration
+        # This is required to get paths and settings for the logger
         orchestrator = Orchestrator.bootstrap("config.toml")
         
-        # Проверка режима запуска: интеграция (аргументы) или терминал
+        # Step 2: Initialize infrastructure (Logging)
+        # We pass the loaded config object to configure file rotation and levels
+        setup_logger(orchestrator.config)
+        logger.info("Infrastructure and logging are successfully initialized.")
+        
+        logger.info("--- Hik-handler Session Started ---")
+        
+        # Step 3: Determine execution mode based on CLI arguments
         if len(sys.argv) > 1:
-            logger.info("Запуск в режиме интеграции (headless).")
-            # Выполнение одиночной команды из аргументов командной строки
-            # Аргументы передаются без первого элемента (имени самого скрипта)
+            # Headless mode for integration (scripts, external calls)
+            logger.info("Executing in headless integration mode.")
             orchestrator.execute_headless(sys.argv[1:])
         else:
-            # Стандартный интерактивный режим (REPL терминал)
-            logger.info("Запуск интерактивного терминала.")
+            # Interactive mode (REPL terminal)
+            logger.info("Starting interactive terminal session.")
             orchestrator.run_command()
+            
+        logger.info("--- Hik-handler Session Finished ---")
         
     except KeyboardInterrupt:
-        # Тихий выход при прерывании пользователем
-        logger.info("Приложение остановлено пользователем.")
+        # Silent exit on user interrupt (Ctrl+C)
+        logger.info("Application execution interrupted by user.")
         sys.exit(0)
     except Exception as e:
-        # Логирование критической ошибки перед завершением
-        logger.exception(f"Критическая ошибка при работе приложения: {e}", exc_info=True)
+        # Catch and log any unhandled critical errors
+        logger.exception(f"Unhandled critical system error: {e}", exc_info=True)
         sys.exit(1)
 
 if __name__ == "__main__":
