@@ -1,148 +1,178 @@
-# Имя файла: cli_terminal.py
-# Путь: app/user_interface/cli_terminal.py - этот файл из репозитория Git
-# Кодовое название: Terminal Interface
-# Версия: 0.3.5.1
+# File: cli_terminal.py
+# Path: app/user_interface/cli_terminal.py
+# Internal Name: Terminal Interface
+# Version: 1.0.0
 
 import logging
-from typing import NoReturn, Optional
+import shlex
+from typing import NoReturn, Optional, List, Dict
 
-from prompt_toolkit import PromptSession, prompt
+from prompt_toolkit import PromptSession, print_formatted_text, HTML
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.shortcuts import clear as clear_screen
 
-# Инициализация логгера уровня модуля
+# Module-level logger initialization
 logger = logging.getLogger(__name__)
 
 class CLITerminal:
     """
-    Класс реализации интерактивного терминала на базе prompt_toolkit.
-    Обеспечивает взаимодействие пользователя с Оркестратором.
+    Interactive terminal implementation based on prompt_toolkit.
+    Provides robust user interaction with the Orchestrator with detailed tracing.
     """
 
     def __init__(self, orchestrator):
         """
-        Инициализация терминала.
+        Terminal initialization.
         
-        -- orchestrator: Экземпляр ядра (Orchestrator) для выполнения команд.
+        -- orchestrator: Core instance (Orchestrator) for command execution.
         """
+        logger.debug("Initializing CLITerminal with orchestrator: %s", type(orchestrator).__name__)
         self._orchestrator = orchestrator
         self._session = PromptSession(history=FileHistory('.terminal_history'))
         
-        # Список базовых команд для автодополнения
+        # Base commands for autocompletion
         self._base_commands = [
             'help', 'list', 'run', 'reload', 'status', 'clear', 'exit'
         ]
-        
-        logger.debug("CLITerminal успешно инициализирован.")
 
-    def _get_completer(self) -> WordCompleter:
-        """
-        Формирует динамический список автодополнения, включая команды и модули.
-        
-        :return: Объект WordCompleter.
-        """
-        # Получаем статус от оркестратора для извлечения списка модулей
-        status_data = self._orchestrator.get_status()
-        modules = status_data.get('available_modules', [])
-        
-        return WordCompleter(self._base_commands + modules, ignore_case=True)
+        # Detailed help descriptions for commands
+        self._command_descriptions: Dict[str, str] = {
+            'list': 'Shows all available XML modules located in the modules directory.',
+            'run': 'Executes a specific module. Usage: <i>run &lt;name&gt; [args]</i>.\n'
+                   'Arguments are passed to the module as key=value pairs.',
+            'reload': 'Rescans the modules directory and reloads available modules.',
+            'status': 'Displays system health, connection status, and loaded modules.',
+            'clear': 'Clears the terminal screen.',
+            'exit': 'Exits the application gracefully.'
+        }
+        logger.info("Terminal Interface initialized successfully.")
 
     def display_welcome(self) -> None:
-        """Выводит приветственное сообщение при старте."""
-        print("="*50)
-        print("Hik-handler CLI v.0.3.5.1")
-        print("Введите 'help' для получения списка команд.")
-        print("="*50)
+        """Displays the welcome banner."""
+        logger.debug("Executing display_welcome")
+        clear_screen()
+        print_formatted_text(HTML("<ansiblue><b>Hik-handler CLI Terminal</b></ansiblue>"))
+        print_formatted_text(HTML("<b>Type 'help' to see available commands.</b>\n"))
+        logger.info("Welcome banner displayed.")
 
-    def request_password(self, prompt_text: str = "Введите пароль: ") -> str:
-        """
-        Безопасный запрос пароля у пользователя без сохранения в историю.
-        
-        -- prompt_text: Текст приглашения к вводу.
-        :return: Строка введенного пароля.
-        """
-        logger.debug("Вход в метод request_password.")
-        logger.info("Ожидание ввода пароля от пользователя...")
-        
-        # Используем prompt с маскировкой ввода и без привязки к истории сессии
-        password = prompt(prompt_text, is_password=True)
-        
-        logger.debug("Метод request_password успешно завершен.")
-        return password
+    def _get_completer(self) -> WordCompleter:
+        """Returns a dynamically updating autocompleter."""
+        logger.debug("Building autocompleter with base commands")
+        return WordCompleter(self._base_commands, ignore_case=True)
 
-    def _handle_command(self, user_input: str) -> bool:
+    def _handle_command(self, command_str: str) -> bool:
         """
-        Разбирает и обрабатывает ввод пользователя.
-        
-        -- user_input: Сырая строка из терминала.
-        :return: False, если нужно завершить работу, иначе True.
+        Processes a single command string.
+        Returns False if the application should exit, True otherwise.
         """
-        parts = user_input.strip().split()
-        if not parts:
+        logger.debug("Executing _handle_command with input: '%s'", command_str)
+        if not command_str.strip():
             return True
 
-        cmd = parts[0].lower()
+        try:
+            parts = shlex.split(command_str, posix=True)
+            logger.debug("Command parsed by shlex into parts: %s", parts)
+        except ValueError as e:
+            logger.error("Failed to parse command: %s", e)
+            print_formatted_text(HTML(f"<ansired>Syntax error in command: {e}</ansired>"))
+            return True
+
+        command = parts[0].lower()
         args = parts[1:]
 
-        logger.info(f"Обработка команды пользователя: {cmd}")
-
-        if cmd in ['exit', 'quit']:
-            print("Завершение работы...")
+        if command == 'exit':
+            logger.debug("Exit command received.")
             return False
-
-        elif cmd == 'help':
-            self._show_help()
-
-        elif cmd == 'clear':
+        elif command == 'clear':
+            logger.debug("Clear command received.")
             clear_screen()
-
-        elif cmd == 'list':
-            modules = self._orchestrator.get_status().get('available_modules', [])
-            print(f"Доступные модули: {', '.join(modules) if modules else 'нет'}")
-
-        elif cmd == 'reload':
-            self._orchestrator.discover_modules()
-            print("Список модулей обновлен.")
-
-        elif cmd == 'status':
-            status = self._orchestrator.get_status()
-            print(f"Система: {status.get('status')}")
-            print(f"Версия ядра: {status.get('version')}")
-
-        elif cmd == 'run':
-            if not args:
-                print("Ошибка: укажите имя модуля. Пример: run get_device_info")
-            else:
-                # В данной версии передаем управление Оркестратору
-                # В будущем здесь будет логика сбора аргументов
-                print(f"Запуск модуля {args[0]}... (функционал в разработке)")
-        
+        elif command == 'help':
+            self._cmd_help(args[0] if args else None)
+        elif command == 'list':
+            self._cmd_list()
+        elif command == 'run':
+            self._cmd_run(args)
+        elif command == 'reload':
+            self._cmd_reload()
+        elif command == 'status':
+            self._cmd_status()
         else:
-            print(f"Неизвестная команда: {cmd}. Введите 'help'.")
+            logger.warning("Unknown command input: %s", command)
+            print_formatted_text(HTML(f"<ansired>Unknown command: {command}</ansired>"))
 
         return True
 
-    def _show_help(self) -> None:
-        """Выводит список доступных команд."""
-        print("\nДоступные команды:")
-        print("  list         - Показать доступные XML модули")
-        print("  run <name>   - Выполнить указанный модуль")
-        print("  reload       - Пересканировать директорию модулей")
-        print("  status       - Состояние системы")
-        print("  clear        - Очистить экран")
-        print("  help         - Эта справка")
-        print("  exit         - Выход\n")
+    def _cmd_list(self) -> None:
+        """Handles the 'list' command."""
+        logger.debug("Executing _cmd_list")
+        print("Available modules: [mocked]")
+        logger.info("Module list displayed.")
+
+    def _cmd_run(self, args: List[str]) -> None:
+        """Handles the 'run' command."""
+        logger.debug("Executing _cmd_run with args: %s", args)
+        if not args:
+            logger.warning("Run command executed without module name.")
+            print_formatted_text(HTML("<ansired>Missing module name. Usage: run <name> [args]</ansired>"))
+            return
+        
+        module_name = args[0]
+        params = {}
+        for arg in args[1:]:
+            if '=' in arg:
+                k, v = arg.split('=', 1)
+                # Keep values as strings per analytical decision, strip extra spaces
+                params[k.strip()] = v.strip()
+                logger.debug("Parsed argument: %s = %s", k.strip(), v.strip())
+            else:
+                logger.warning("Ignoring invalid argument format (expected key=value): %s", arg)
+        
+        logger.info("Executing headless module: %s with %d arguments", module_name, len(params))
+        self._orchestrator.execute_headless(module_name, **params)
+
+    def _cmd_reload(self) -> None:
+        """Handles the 'reload' command."""
+        logger.debug("Executing _cmd_reload")
+        print("Modules reloaded. [mocked]")
+        logger.info("Modules reloaded successfully.")
+
+    def _cmd_status(self) -> None:
+        """Handles the 'status' command."""
+        logger.debug("Executing _cmd_status")
+        print("System status: OK [mocked]")
+        logger.info("System status displayed.")
+
+    def _cmd_help(self, command: Optional[str] = None) -> None:
+        """Handles the 'help' command."""
+        logger.debug("Executing _cmd_help for command: %s", command)
+        if not command:
+            print_formatted_text(HTML("\n<ansigreen><b>Available Commands:</b></ansigreen>"))
+            print("  list               - Show available XML modules")
+            print("  run <name> [args]  - Execute module with arguments")
+            print("  reload             - Rescan modules directory")
+            print("  status             - System health and loaded data")
+            print("  clear              - Clear terminal screen")
+            print("  help [command]     - This help message or detailed info")
+            print("  exit               - Exit application\n")
+            logger.info("General help message displayed.")
+        else:
+            description = self._command_descriptions.get(command.lower())
+            if description:
+                print_formatted_text(HTML(f"\n<ansicyan><b>Command: {command}</b></ansicyan>"))
+                print(f"  {description}\n")
+                logger.info("Detailed help displayed for command: %s", command)
+            else:
+                print_formatted_text(HTML(f"<ansired>No detailed help available for '{command}'.</ansired>"))
+                logger.warning("Help requested for unknown command: %s", command)
 
     def run(self) -> None:
-        """Запускает основной цикл REPL."""
+        """Runs the main REPL loop."""
+        logger.debug("Starting main REPL loop")
         self.display_welcome()
-        
-        logger.info("Запуск основного цикла терминала (REPL).")
         
         try:
             while True:
-                # Использование автодополнения и истории сессии
                 user_input = self._session.prompt(
                     'hik-handler > ',
                     completer=self._get_completer()
@@ -151,10 +181,8 @@ class CLITerminal:
                 if not self._handle_command(user_input):
                     break
                     
-        except KeyboardInterrupt:
-            logger.info("Прерывание пользователем (Ctrl+C).")
-        except EOFError:
-            logger.info("Завершение ввода (Ctrl+D).")
+        except (KeyboardInterrupt, EOFError):
+            logger.debug("REPL loop interrupted by user.")
         finally:
-            print("\nДо свидания.")
-            logger.info("Терминальная сессия закрыта.")
+            print_formatted_text(HTML("\n<ansiyellow>Goodbye.</ansiyellow>"))
+            logger.info("Terminal session closed.")

@@ -1,8 +1,8 @@
 """
 File: orchestrator.py
-Path: app/engine/orchestrator.py
+Path: src/core/orchestrator.py
 Codename: Orchestrator
-Version: v.1.0.2 (Logging Optimized)
+Version: v.1.0.3 (Terminal Ready)
 
 Description:
     Central coordination engine for the Hik-handler utility. 
@@ -52,7 +52,7 @@ class Orchestrator:
         self._resolver = resolver
         self._client = client
         self._base_context = base_context
-        self._version = "1.0.2"
+        self._version = "1.0.3"
         
         logger.debug(f"Orchestrator constructor: instance created (v{self._version})")
 
@@ -80,7 +80,7 @@ class Orchestrator:
         connect_str: Optional[str] = None
     ) -> bool:
         """
-        Executes a specific module without an interactive shell.
+        Main execution point for Terminal or Scripting modes (Headless).
         
         Args:
             module_name (str): Name of the XML module to run.
@@ -90,7 +90,7 @@ class Orchestrator:
         Returns:
             bool: Success status of the command execution.
         """
-        logger.info(f"Execution: Starting task '{module_name}' in headless mode.")
+        logger.info(f"Execution: Starting task '{module_name}' via common entry point.")
         
         # TRANSFORMATION POINT: 
         # We create a specific task context derived from base + arguments
