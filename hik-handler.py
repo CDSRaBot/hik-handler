@@ -7,6 +7,7 @@ Version: v.1.0.1
 
 import logging
 import sys
+from app.configuration.settings import ConfigManager
 from app.engine.orchestrator import Orchestrator
 from app.engine.logger import setup_logger
 
@@ -24,11 +25,12 @@ def main():
     try:
         # Step 1: Bootstrap the core to load configuration
         # This is required to get paths and settings for the logger
-        orchestrator = Orchestrator.bootstrap("config.toml")
+        config = ConfigManager("config.toml")
+        orchestrator = Orchestrator.bootstrap(config)
         
         # Step 2: Initialize infrastructure (Logging)
         # We pass the loaded config object to configure file rotation and levels
-        setup_logger(orchestrator.config)
+        setup_logger(orchestrator) #.config)
         logger.info("Infrastructure and logging are successfully initialized.")
         
         logger.info("--- Hik-handler Session Started ---")
@@ -41,7 +43,12 @@ def main():
         else:
             # Interactive mode (REPL terminal)
             logger.info("Starting interactive terminal session.")
-            orchestrator.run_command()
+            # Lazy import to keep headless mode lightweight
+            from app.user_interface.cli_terminal import CLITerminal
+            
+            # Connect the Terminal to the Orchestrator
+            terminal = CLITerminal(orchestrator)
+            terminal.run()
             
         logger.info("--- Hik-handler Session Finished ---")
         

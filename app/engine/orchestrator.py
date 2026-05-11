@@ -15,6 +15,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 # Internal system component imports
+from app.configuration.settings import ConfigManager
 from app.configuration.security import SecureContext
 from app.engine.loader import ModuleManager
 from app.engine.validator import XMLValidator
@@ -58,19 +59,37 @@ class Orchestrator:
         logger.debug(f"Orchestrator constructor: instance created (v{self._version})")
 
     @classmethod
-    def bootstrap(cls, base_context: SecureContext) -> "Orchestrator":
+    def bootstrap(cls, config: ConfigManager) -> "Orchestrator":
         """
-        Factory method (Composition Root) to assemble the orchestrator 
-        with all necessary subsystems.
-        """
-        logger.debug("Orchestrator: bootstrapping subsystems (loader, validator, resolver, client)")
+        Factory method to assemble the Orchestrator and its dependencies.
         
+        Args:
+            config (ConfigManager): Fully initialized configuration object.
+            
+        Returns:
+            Orchestrator: A ready-to-use orchestrator instance.
+        """
+        logger.info("Bootstrap: Assembling Orchestrator dependencies...")
+        
+        # 1. Извлекаем контекст безопасности из конфигуратора
+        base_context = config.get_secure_context()
+        
+        # 2. Инициализируем Data Plane (с путями из конфигуратора)
+        loader = ModuleManager(base_dir=str(config.modules_path))
+        validator = XMLValidator(xsd_path=str(config.schema_path))
+        resolver = ArgumentResolver()
+        
+        # 3. Инициализируем Network Plane
+        client = HikvisionClient(context=base_context)
+        
+        logger.info("Bootstrap: All subsystems initialized. Returning Orchestrator instance.")
+        
+        # 4. Собираем сам Оркестратор
         return cls(
-            loader=ModuleManager(),
-            validator=XMLValidator(),
-            resolver=ArgumentResolver(),
-            # Initialized with base context for default state
-            client=HikvisionClient(base_context),
+            loader=loader,
+            validator=validator,
+            resolver=resolver,
+            client=client,
             base_context=base_context
         )
 

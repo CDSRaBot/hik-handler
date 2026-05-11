@@ -101,5 +101,5 @@ class ConfigManager:
         :return: Объект Path, указывающий на директорию схем.
         """
         logger.debug("Запрос пути к директории схем")
-        path_str = self._config_data.get("paths", {}).get("schema_dir", "schema")
+        path_str = self._config_data.get("paths", {}).get("validation_schema") #, "schema")
         return Path(path_str).resolve()
