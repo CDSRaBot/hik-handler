@@ -41,3 +41,106 @@
 2026-05-11 01:17:23,761 - INFO - Система логирования инициализирована
 2026-05-11 01:50:51,446 - INFO - Система логирования инициализирована
 2026-05-11 11:06:51,226 - INFO - Система логирования инициализирована
+2026-05-11 15:13:33,749 - INFO - Система логирования инициализирована
+2026-05-11 15:13:33,749 - DEBUG - Файл: logs\hik-handler.log, Уровень: DEBUG, Ротация: 5MB
+2026-05-11 15:24:42,064 - DEBUG - Logger configuration: level=DEBUG, max_size=5MB, path=logs\hik-handler.log
+2026-05-11 15:24:42,065 - INFO - Logging system successfully initialized.
+2026-05-11 17:56:05,615 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 17:56:05,616 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 17:56:05,616 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 17:56:05,616 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 17:56:05,617 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 17:56:06,085 - hik_handler.app.user_interface.cli_terminal - DEBUG - Initializing CLITerminal with orchestrator: Orchestrator
+2026-05-11 17:56:06,141 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal Interface initialized successfully.
+2026-05-11 17:56:06,142 - hik_handler.app.user_interface.cli_terminal - DEBUG - Starting main REPL loop
+2026-05-11 17:56:06,142 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing display_welcome
+2026-05-11 17:56:06,148 - hik_handler.app.user_interface.cli_terminal - INFO - Welcome banner displayed.
+2026-05-11 17:56:06,149 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 17:58:50,360 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'help list'
+2026-05-11 17:58:50,361 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['help', 'list']
+2026-05-11 17:58:50,361 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _cmd_help for command: list
+2026-05-11 17:58:50,364 - hik_handler.app.user_interface.cli_terminal - INFO - Detailed help displayed for command: list
+2026-05-11 17:58:50,365 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 18:06:47,392 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'exit'
+2026-05-11 18:06:47,392 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['exit']
+2026-05-11 18:06:47,393 - hik_handler.app.user_interface.cli_terminal - DEBUG - Exit command received.
+2026-05-11 18:06:47,395 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal session closed.
+2026-05-11 18:06:47,396 - hik_handler.__main__ - INFO - --- Hik-handler Session Finished ---
+2026-05-11 18:08:04,652 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 18:08:04,652 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 18:08:04,653 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 18:08:04,653 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 18:08:04,653 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 18:08:04,978 - hik_handler.app.user_interface.cli_terminal - DEBUG - Initializing CLITerminal with orchestrator: Orchestrator
+2026-05-11 18:08:05,021 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal Interface initialized successfully.
+2026-05-11 18:08:05,021 - hik_handler.app.user_interface.cli_terminal - DEBUG - Starting main REPL loop
+2026-05-11 18:08:05,022 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing display_welcome
+2026-05-11 18:08:05,028 - hik_handler.app.user_interface.cli_terminal - INFO - Welcome banner displayed.
+2026-05-11 18:08:05,028 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 18:11:46,572 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'exit'
+2026-05-11 18:11:46,573 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['exit']
+2026-05-11 18:11:46,573 - hik_handler.app.user_interface.cli_terminal - DEBUG - Exit command received.
+2026-05-11 18:11:46,577 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal session closed.
+2026-05-11 18:11:46,577 - hik_handler.__main__ - INFO - --- Hik-handler Session Finished ---
+2026-05-11 18:12:17,193 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 18:12:17,193 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 18:12:17,194 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 18:12:17,194 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 18:12:17,555 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal Interface initialized successfully.
+2026-05-11 18:12:17,562 - hik_handler.app.user_interface.cli_terminal - INFO - Welcome banner displayed.
+2026-05-11 18:22:19,074 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal session closed.
+2026-05-11 18:22:19,074 - hik_handler.__main__ - INFO - --- Hik-handler Session Finished ---
+2026-05-11 18:23:37,941 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 18:23:37,941 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 18:23:37,942 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 18:23:37,942 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 18:23:37,942 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 18:23:38,270 - hik_handler.app.user_interface.cli_terminal - DEBUG - Initializing CLITerminal with orchestrator: Orchestrator
+2026-05-11 18:23:38,313 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal Interface initialized successfully.
+2026-05-11 18:23:38,314 - hik_handler.app.user_interface.cli_terminal - DEBUG - Starting main REPL loop
+2026-05-11 18:23:38,314 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing display_welcome
+2026-05-11 18:23:38,320 - hik_handler.app.user_interface.cli_terminal - DEBUG - Welcome banner displayed.
+2026-05-11 18:23:38,321 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 18:24:16,302 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'clear'
+2026-05-11 18:24:16,303 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['clear']
+2026-05-11 18:24:16,303 - hik_handler.app.user_interface.cli_terminal - DEBUG - Clear command received.
+2026-05-11 18:24:16,304 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 18:26:01,110 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'help'
+2026-05-11 18:26:01,110 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['help']
+2026-05-11 18:26:01,110 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _cmd_help for command: None
+2026-05-11 18:26:01,114 - hik_handler.app.user_interface.cli_terminal - INFO - General help message displayed.
+2026-05-11 18:26:01,114 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 18:26:16,704 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'help run'
+2026-05-11 18:26:16,704 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['help', 'run']
+2026-05-11 18:26:16,704 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _cmd_help for command: run
+2026-05-11 18:26:16,707 - hik_handler.app.user_interface.cli_terminal - INFO - Detailed help displayed for command: run
+2026-05-11 18:26:16,708 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 19:20:33,255 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 're'
+2026-05-11 19:20:33,257 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['re']
+2026-05-11 19:20:33,257 - hik_handler.app.user_interface.cli_terminal - WARNING - Unknown command input: re
+2026-05-11 19:20:33,262 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 19:20:42,173 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'reload'
+2026-05-11 19:20:42,174 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['reload']
+2026-05-11 19:20:42,174 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _cmd_reload
+2026-05-11 19:20:42,174 - hik_handler.app.user_interface.cli_terminal - INFO - Modules reloaded successfully.
+2026-05-11 19:20:42,174 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 19:20:57,374 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'exit'
+2026-05-11 19:20:57,375 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['exit']
+2026-05-11 19:20:57,375 - hik_handler.app.user_interface.cli_terminal - DEBUG - Exit command received.
+2026-05-11 19:20:57,378 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal session closed.
+2026-05-11 19:20:57,378 - hik_handler.__main__ - INFO - --- Hik-handler Session Finished ---
+2026-05-11 19:21:17,009 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 19:21:17,010 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 19:21:17,010 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 19:21:17,011 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 19:21:17,011 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 19:21:17,018 - hik_handler.__main__ - ERROR - Unhandled critical system error: unindent does not match any outer indentation level (cli_terminal.py, line 126)
+Traceback (most recent call last):
+  File "C:\Git\hik-handler\hik-handler.py", line 47, in main
+    from app.user_interface.cli_terminal import CLITerminal
+  File "C:\Git\hik-handler\app\user_interface\__init__.py", line 8, in <module>
+    from .cli_terminal import CLITerminal
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 126
+    def _cmd_run(self, args: List[str]) -> None:
+                                                ^
+IndentationError: unindent does not match any outer indentation level

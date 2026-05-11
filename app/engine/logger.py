@@ -1,66 +1,76 @@
-# Имя файла: logger.py
-# Путь: app/engine/logger.py
-# Кодовое название: LogManager
-# Версия: 0.3.6
+# File: logger.py
+# Path: app/engine/logger.py
+# Code Name: LogManager
+# Version: 1.1.0
 
 import logging
+import sys
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
 from typing import Any
 
 def setup_logger(config: Any) -> logging.Logger:
     """
-    Инициализирует и настраивает логгер hik_handler.
+    Initializes and configures the hik_handler logger as a parent for the whole app.
     
-    Аргументы:
-        config (Any): Объект конфигурации, содержащий атрибут data.
+    Args:
+        config (Any): Configuration object containing 'data' attribute.
         
-    Возвращает:
-        logging.Logger: Настроенный объект логгера (Singleton).
+    Returns:
+        logging.Logger: Configured logger instance (Singleton pattern).
     """
-    # Безопасное извлечение данных конфигурации
+    # Define the base name for the project logger hierarchy
+    base_name = "hik_handler"
+    logger = logging.getLogger(base_name)
+
+    # Guard clause: prevent adding multiple handlers if setup is called multiple times
+    if logger.handlers:
+        return logger
+
+    # Extract configuration data safely
     config_data = getattr(config, "data", {}) if config else {}
     log_settings = config_data.get("logging", {})
     
-    # Определение пути к логам из config [paths][log_dir]
+    # Define log directory and ensure it exists
     log_dir = config_data.get("paths", {}).get("log_dir", "logs")
     log_dir_path = Path(log_dir)
-    
-    # Создание директории логов, если она отсутствует
     log_dir_path.mkdir(parents=True, exist_ok=True)
-
-    # Получение экземпляра логгера
-    logger = logging.getLogger("hik_handler")
     
-    # Установка уровня логирования (по умолчанию INFO)
-    log_level = log_settings.get("level", "INFO").upper()
+    # Set logging level (default to INFO)
+    log_level_str = log_settings.get("level", "INFO").upper()
+    log_level = getattr(logging, log_level_str, logging.INFO)
     logger.setLevel(log_level)
 
-    # Настройка формата сообщений
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    # Format: Timestamp - Level - Module - Message
+    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_formatter = logging.Formatter('%(levelname)s: %(message)s')
     
-    # Путь к файлу лога
+    # 1. File Handler (Rotating)
     log_file = log_dir_path / "hik-handler.log"
-    
-    # Настройка ротации файлов (параметры из config.toml)
-    # max_size_mb конвертируется в байты для RotatingFileHandler
-    handler = RotatingFileHandler(
+    file_handler = RotatingFileHandler(
         log_file,
         maxBytes=log_settings.get("max_size_mb", 5) * 1024 * 1024,
         backupCount=log_settings.get("backup_count", 3),
         encoding='utf-8'
     )
-    handler.setFormatter(formatter)
+    file_handler.setFormatter(file_formatter)
+    file_handler.setLevel(log_level)
     
-    # Защита от дублирования обработчиков
-    if not logger.handlers:
-        logger.addHandler(handler)
-        # Информационное логирование старта
-        logger.info("Система логирования инициализирована")
-        # Детальное логирование параметров в режиме DEBUG
-        logger.debug(
-            f"Файл: {log_file}, Уровень: {log_level}, "
-            f"Ротация: {log_settings.get('max_size_mb')}MB"
-        )
+    # 2. Console Handler (for CLI feedback)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(console_formatter)
+    # Usually we want console to be slightly less verbose or match the main level
+    console_handler.setLevel(log_level)
+    
+    # Attach handlers
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
 
+    # Ensure this logger is the root for all project sub-modules
+    logger.propagate = True
+
+    # Initial logs
+    logger.debug(f"Logger infrastructure ready. Root: {base_name}, Level: {log_level_str}")
+    logger.info("Logging system initialized (File & Console).")
+    
     return logger

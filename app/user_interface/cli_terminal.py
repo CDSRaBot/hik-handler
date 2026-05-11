@@ -13,7 +13,7 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.shortcuts import clear as clear_screen
 
 # Module-level logger initialization
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 class CLITerminal:
     """
@@ -54,7 +54,7 @@ class CLITerminal:
         clear_screen()
         print_formatted_text(HTML("<ansiblue><b>Hik-handler CLI Terminal</b></ansiblue>"))
         print_formatted_text(HTML("<b>Type 'help' to see available commands.</b>\n"))
-        logger.info("Welcome banner displayed.")
+        logger.debug("Welcome banner displayed.")
 
     def _get_completer(self) -> WordCompleter:
         """Returns a dynamically updating autocompleter."""
@@ -109,40 +109,50 @@ class CLITerminal:
         print("Available modules: [mocked]")
         logger.info("Module list displayed.")
 
-    def _cmd_run(self, args: List[str]) -> None:
-        """Handles the 'run' command."""
-        logger.debug("Executing _cmd_run with args: %s", args)
-        if not args:
-            logger.warning("Run command executed without module name.")
-            print_formatted_text(HTML("<ansired>Missing module name. Usage: run <name> [args]</ansired>"))
+def _cmd_list(self) -> None:
+        """Shows all available XML modules indexed in memory."""
+        logger.debug("Executing 'list' command")
+        modules = self._orchestrator.get_available_modules()
+        
+        if not modules:
+            print_formatted_text(HTML("<ansiyellow>No modules found in cache. Use 'reload' to scan disk.</ansiyellow>"))
             return
         
-        module_name = args[0]
-        params = {}
-        for arg in args[1:]:
-            if '=' in arg:
-                k, v = arg.split('=', 1)
-                # Keep values as strings per analytical decision, strip extra spaces
-                params[k.strip()] = v.strip()
-                logger.debug("Parsed argument: %s = %s", k.strip(), v.strip())
-            else:
-                logger.warning("Ignoring invalid argument format (expected key=value): %s", arg)
-        
-        logger.info("Executing headless module: %s with %d arguments", module_name, len(params))
-        self._orchestrator.execute_headless(module_name, **params)
+        print_formatted_text(HTML("\n<ansicyan><b>Available XML Modules:</b></ansicyan>"))
+        for idx, name in enumerate(modules, 1):
+            print(f"  {idx}. {name}")
+        print()
+
+    def _cmd_run(self, args: List[str]) -> None:
+        """Helper to prepare and execute a run command."""
+        # This will be handled in the next iteration of orchestrator integration
+        logger.info("Command 'run' is still under development for direct CLI execution.")
+        print_formatted_text(HTML("<ansiyellow>Command 'run' is not fully implemented yet.</ansiyellow>"))
 
     def _cmd_reload(self) -> None:
-        """Handles the 'reload' command."""
-        logger.debug("Executing _cmd_reload")
-        print("Modules reloaded. [mocked]")
-        logger.info("Modules reloaded successfully.")
+        """Force refresh of the module indexing system."""
+        logger.debug("Executing 'reload' command")
+        print_formatted_text(HTML("<ansicyan>Scanning modules directory...</ansicyan>"))
+        
+        # Trigger full disk discovery via orchestrator
+        modules = self._orchestrator.discover_modules()
+        
+        print_formatted_text(HTML(f"<ansigreen>Success. Found {len(modules)} module(s).</ansigreen>"))
+        logger.info("Module index manually reloaded via CLI.")
 
     def _cmd_status(self) -> None:
-        """Handles the 'status' command."""
-        logger.debug("Executing _cmd_status")
-        print("System status: OK [mocked]")
-        logger.info("System status displayed.")
-
+        """Displays system health and metrics."""
+        logger.debug("Executing 'status' command")
+        status = self._orchestrator.get_status()
+        
+        print_formatted_text(HTML("\n<ansicyan><b>Hik-handler System Status:</b></ansicyan>"))
+        print(f"  Version: {status.get('version', 'Unknown')}")
+        print(f"  Engine:  {status.get('engine', 'Unknown')}")
+        
+        metrics = status.get('metrics', {})
+        print(f"  Indexed Modules: {metrics.get('indexed_modules', 0)}")
+        print()
+        
     def _cmd_help(self, command: Optional[str] = None) -> None:
         """Handles the 'help' command."""
         logger.debug("Executing _cmd_help for command: %s", command)

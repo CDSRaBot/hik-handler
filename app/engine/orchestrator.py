@@ -23,7 +23,7 @@ from app.engine.resolver import ArgumentResolver
 from app.communication.session import HikvisionClient, HikvisionNetworkError
 
 # Logger configuration for the module
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 class Orchestrator:
     """

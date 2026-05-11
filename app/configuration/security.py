@@ -8,7 +8,7 @@ from dataclasses import dataclass, replace
 from typing import Optional, Any, Dict
 
 # Initialize module-level logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 @dataclass(frozen=True)
 class SecureContext:

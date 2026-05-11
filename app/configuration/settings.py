@@ -12,7 +12,7 @@ from typing import Optional, Dict, Any
 from app.configuration.security import SecureContext 
 
 # Инициализация логгера уровня модуля (PEP 8, иерархическое логирование)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 
 class ConfigManager:
@@ -82,6 +82,13 @@ class ConfigManager:
         logger.info("SecureContext успешно сформирован и передан ядру.")
         return context
 
+    @property
+    def data(self) -> Dict[str, Any]:
+        """
+        Returns raw configuration data for infrastructure components (like Logger).
+        """
+        return self._config_data
+        
     @property
     def modules_path(self) -> Path:
         """

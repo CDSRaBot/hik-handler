@@ -13,7 +13,7 @@ from app.engine.logger import setup_logger
 
 # Initial logger for entry point bootstrap
 # Note: It will use default settings until setup_logger is called
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 def main():
     """
@@ -30,7 +30,7 @@ def main():
         
         # Step 2: Initialize infrastructure (Logging)
         # We pass the loaded config object to configure file rotation and levels
-        setup_logger(orchestrator) #.config)
+        setup_logger(config)
         logger.info("Infrastructure and logging are successfully initialized.")
         
         logger.info("--- Hik-handler Session Started ---")

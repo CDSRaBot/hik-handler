@@ -17,7 +17,7 @@ from requests.auth import HTTPDigestAuth
 from app.configuration.security import SecureContext
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 # Suppress warnings about self-signed certificates for HTTPS
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

@@ -9,7 +9,7 @@ from lxml import etree
 from defusedxml import lxml as safe_lxml
 
 # Initialize module logger for tracking validation operations
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 
 class XMLValidator:

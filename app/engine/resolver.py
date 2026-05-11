@@ -16,7 +16,7 @@ from typing import Any, Dict
 
 
 # Initialize logger for the module
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 
 class ArgumentResolver:

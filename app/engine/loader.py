@@ -1,5 +1,5 @@
  #Имя файла: loader.py
-# Путь: app/engine/logger.py
+# Путь: app/engine/loader.py
 # Кодовое название: ModuleManager
 # Версия: 0.3.5
 
@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Set, Dict, Any
 
 # Настройка логгера для модуля загрузки
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hik_handler.{__name__}")
 
 class ModuleManager:
     """
@@ -101,6 +101,17 @@ class ModuleManager:
         except Exception as e:
             logger.error(f"Ошибка при сканировании директории {self._base_dir}: {e}")
             return self._cached_modules # Возвращаем старый кэш при ошибке
+
+    def reload_modules(self) -> List[str]:
+        """
+        Интерфейсный метод для принудительного обновления списка модулей.
+        Синхронизирован с требованиями Архитектора.
+        
+        Returns:
+            List[str]: Обновленный список имен модулей.
+        """
+        logger.debug("Manual module index reload requested.")
+        return self.discover_modules()
 
     def get_available_modules(self) -> List[str]:
         """Возвращает список модулей из кэша памяти без обращения к диску."""
