@@ -144,3 +144,185 @@ Traceback (most recent call last):
     def _cmd_run(self, args: List[str]) -> None:
                                                 ^
 IndentationError: unindent does not match any outer indentation level
+2026-05-11 20:48:33,447 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 20:48:33,448 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 20:48:33,448 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 20:48:33,449 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 20:48:33,449 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 20:48:33,481 - hik_handler.__main__ - ERROR - Unhandled critical system error: unindent does not match any outer indentation level (cli_terminal.py, line 126)
+Traceback (most recent call last):
+  File "C:\Git\hik-handler\hik-handler.py", line 47, in main
+    from app.user_interface.cli_terminal import CLITerminal
+  File "C:\Git\hik-handler\app\user_interface\__init__.py", line 8, in <module>
+    from .cli_terminal import CLITerminal
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 126
+    def _cmd_run(self, args: List[str]) -> None:
+                                                ^
+IndentationError: unindent does not match any outer indentation level
+2026-05-11 20:53:49,386 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 20:53:49,386 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 20:53:49,387 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 20:53:49,387 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 20:53:49,387 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 20:53:49,405 - hik_handler.__main__ - ERROR - Unhandled critical system error: unexpected indent (cli_terminal.py, line 117)
+Traceback (most recent call last):
+  File "C:\Git\hik-handler\hik-handler.py", line 47, in main
+    from app.user_interface.cli_terminal import CLITerminal
+  File "C:\Git\hik-handler\app\user_interface\__init__.py", line 8, in <module>
+    from .cli_terminal import CLITerminal
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 117
+    if not modules:
+IndentationError: unexpected indent
+2026-05-11 20:54:43,975 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 20:54:43,976 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 20:54:43,976 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 20:54:43,976 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 20:54:43,977 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 20:54:44,564 - hik_handler.app.user_interface.cli_terminal - DEBUG - Initializing CLITerminal with orchestrator: Orchestrator
+2026-05-11 20:54:44,621 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal Interface initialized successfully.
+2026-05-11 20:54:44,621 - hik_handler.app.user_interface.cli_terminal - DEBUG - Starting main REPL loop
+2026-05-11 20:54:44,622 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing display_welcome
+2026-05-11 20:54:44,629 - hik_handler.app.user_interface.cli_terminal - DEBUG - Welcome banner displayed.
+2026-05-11 20:54:44,629 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 20:55:04,292 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'reload'
+2026-05-11 20:55:04,293 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['reload']
+2026-05-11 20:55:04,293 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing 'reload' command
+2026-05-11 20:55:04,297 - hik_handler.app.engine.orchestrator - INFO - Discovery: Initiating full modules scan on disk.
+2026-05-11 20:55:04,297 - hik_handler.app.engine.loader - DEBUG - Начало сканирования директории модулей
+2026-05-11 20:55:04,300 - hik_handler.app.engine.loader - DEBUG - Индекс успешно обновлен: C:\Git\hik-handler\modules\modules.inf
+2026-05-11 20:55:04,300 - hik_handler.app.engine.loader - INFO - Сканирование завершено. Найдено модулей: 0
+2026-05-11 20:55:04,303 - hik_handler.app.user_interface.cli_terminal - INFO - Module index manually reloaded via CLI.
+2026-05-11 20:55:04,304 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 20:55:35,642 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'help'
+2026-05-11 20:55:35,643 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['help']
+2026-05-11 20:55:35,643 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _cmd_help for command: None
+2026-05-11 20:55:35,647 - hik_handler.app.user_interface.cli_terminal - INFO - General help message displayed.
+2026-05-11 20:55:35,647 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 20:55:42,152 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'list'
+2026-05-11 20:55:42,153 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['list']
+2026-05-11 20:55:42,153 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing 'list' command
+2026-05-11 20:55:42,153 - hik_handler.app.engine.orchestrator - DEBUG - Orchestrator: Fetching available modules from cache.
+2026-05-11 20:55:42,154 - hik_handler.app.engine.loader - DEBUG - Начало сканирования директории модулей
+2026-05-11 20:55:42,156 - hik_handler.app.engine.loader - DEBUG - Индекс успешно обновлен: C:\Git\hik-handler\modules\modules.inf
+2026-05-11 20:55:42,156 - hik_handler.app.engine.loader - INFO - Сканирование завершено. Найдено модулей: 0
+2026-05-11 20:55:42,160 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:02:40,199 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'exit'
+2026-05-11 21:02:40,200 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['exit']
+2026-05-11 21:02:40,200 - hik_handler.app.user_interface.cli_terminal - DEBUG - Exit command received.
+2026-05-11 21:02:40,203 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal session closed.
+2026-05-11 21:02:40,203 - hik_handler.__main__ - INFO - --- Hik-handler Session Finished ---
+2026-05-11 21:02:44,910 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 21:02:44,911 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 21:02:44,911 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 21:02:44,912 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 21:02:44,912 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 21:02:45,219 - hik_handler.app.user_interface.cli_terminal - DEBUG - Initializing CLITerminal with orchestrator: Orchestrator
+2026-05-11 21:02:45,261 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal Interface initialized successfully.
+2026-05-11 21:02:45,261 - hik_handler.app.user_interface.cli_terminal - DEBUG - Starting main REPL loop
+2026-05-11 21:02:45,261 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing display_welcome
+2026-05-11 21:02:45,268 - hik_handler.app.user_interface.cli_terminal - DEBUG - Welcome banner displayed.
+2026-05-11 21:02:45,268 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:02:50,918 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'reload'
+2026-05-11 21:02:50,918 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['reload']
+2026-05-11 21:02:50,919 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing 'reload' command
+2026-05-11 21:02:50,922 - hik_handler.app.engine.orchestrator - INFO - Discovery: Initiating full modules scan on disk.
+2026-05-11 21:02:50,923 - hik_handler.app.engine.loader - DEBUG - Starting module directory scan
+2026-05-11 21:02:50,924 - hik_handler.app.engine.loader - DEBUG - Index successfully updated: C:\Git\hik-handler\modules\modules.inf
+2026-05-11 21:02:50,924 - hik_handler.app.engine.loader - INFO - Scan completed. Modules found: 0
+2026-05-11 21:02:50,928 - hik_handler.app.user_interface.cli_terminal - INFO - Module index manually reloaded via CLI.
+2026-05-11 21:02:50,929 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:29:26,421 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'reload'
+2026-05-11 21:29:26,424 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['reload']
+2026-05-11 21:29:26,424 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing 'reload' command
+2026-05-11 21:29:26,432 - hik_handler.app.engine.orchestrator - INFO - Discovery: Initiating full modules scan on disk.
+2026-05-11 21:29:26,433 - hik_handler.app.engine.loader - DEBUG - Starting module directory scan
+2026-05-11 21:29:26,436 - hik_handler.app.engine.loader - DEBUG - File discovered: 01_minimal_plugin.xml
+2026-05-11 21:29:26,436 - hik_handler.app.engine.loader - DEBUG - File discovered: 02_arguments_plugin.xml
+2026-05-11 21:29:26,436 - hik_handler.app.engine.loader - DEBUG - File discovered: 03_resolver_test_plugin.xml
+2026-05-11 21:29:26,439 - hik_handler.app.engine.loader - DEBUG - Index successfully updated: C:\Git\hik-handler\modules\modules.inf
+2026-05-11 21:29:26,440 - hik_handler.app.engine.loader - INFO - Scan completed. Modules found: 3
+2026-05-11 21:29:26,443 - hik_handler.app.user_interface.cli_terminal - INFO - Module index manually reloaded via CLI.
+2026-05-11 21:29:26,443 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:29:37,379 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'list'
+2026-05-11 21:29:37,379 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['list']
+2026-05-11 21:29:37,380 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing 'list' command
+2026-05-11 21:29:37,380 - hik_handler.app.engine.orchestrator - DEBUG - Orchestrator: Fetching available modules from cache.
+2026-05-11 21:29:37,381 - hik_handler.app.engine.loader - DEBUG - Requesting available modules from cache.
+2026-05-11 21:29:37,384 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:38:47,053 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'run run'
+2026-05-11 21:38:47,054 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['run', 'run']
+2026-05-11 21:38:47,054 - hik_handler.app.user_interface.cli_terminal - INFO - Executing module 'run' with params: {}
+2026-05-11 21:38:47,057 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal session closed.
+2026-05-11 21:38:47,058 - hik_handler.__main__ - ERROR - Unhandled critical system error: Orchestrator.execute_headless() missing 1 required positional argument: 'params'
+Traceback (most recent call last):
+  File "C:\Git\hik-handler\hik-handler.py", line 51, in main
+    terminal.run()
+    ~~~~~~~~~~~~^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 205, in run
+    if not self._handle_command(user_input):
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 95, in _handle_command
+    self._cmd_run(args)
+    ~~~~~~~~~~~~~^^^^^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 144, in _cmd_run
+    self._orchestrator.execute_headless(module_name, **params)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Orchestrator.execute_headless() missing 1 required positional argument: 'params'
+2026-05-11 21:39:06,523 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 21:39:06,524 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 21:39:06,524 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 21:39:06,524 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 21:39:06,524 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 21:39:07,028 - hik_handler.app.user_interface.cli_terminal - DEBUG - Initializing CLITerminal with orchestrator: Orchestrator
+2026-05-11 21:39:07,091 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal Interface initialized successfully.
+2026-05-11 21:39:07,091 - hik_handler.app.user_interface.cli_terminal - DEBUG - Starting main REPL loop
+2026-05-11 21:39:07,091 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing display_welcome
+2026-05-11 21:39:07,099 - hik_handler.app.user_interface.cli_terminal - DEBUG - Welcome banner displayed.
+2026-05-11 21:39:07,099 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:39:31,053 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'list'
+2026-05-11 21:39:31,053 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['list']
+2026-05-11 21:39:31,054 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing 'list' command
+2026-05-11 21:39:31,054 - hik_handler.app.engine.orchestrator - DEBUG - Orchestrator: Fetching available modules from cache.
+2026-05-11 21:39:31,054 - hik_handler.app.engine.loader - DEBUG - Requesting available modules from cache.
+2026-05-11 21:39:31,057 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:40:28,201 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'run 01_minimal_plugin'
+2026-05-11 21:40:28,202 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['run', '01_minimal_plugin']
+2026-05-11 21:40:28,202 - hik_handler.app.user_interface.cli_terminal - INFO - Executing module '01_minimal_plugin' with params: {}
+2026-05-11 21:40:28,205 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal session closed.
+2026-05-11 21:40:28,206 - hik_handler.__main__ - ERROR - Unhandled critical system error: Orchestrator.execute_headless() missing 1 required positional argument: 'params'
+Traceback (most recent call last):
+  File "C:\Git\hik-handler\hik-handler.py", line 51, in main
+    terminal.run()
+    ~~~~~~~~~~~~^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 205, in run
+    if not self._handle_command(user_input):
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 95, in _handle_command
+    self._cmd_run(args)
+    ~~~~~~~~~~~~~^^^^^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 144, in _cmd_run
+    self._orchestrator.execute_headless(module_name, **params)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Orchestrator.execute_headless() missing 1 required positional argument: 'params'
+2026-05-11 21:41:14,985 - hik_handler - DEBUG - Logger infrastructure ready. Root: hik_handler, Level: DEBUG
+2026-05-11 21:41:14,985 - hik_handler - INFO - Logging system initialized (File & Console).
+2026-05-11 21:41:14,986 - hik_handler.__main__ - INFO - Infrastructure and logging are successfully initialized.
+2026-05-11 21:41:14,986 - hik_handler.__main__ - INFO - --- Hik-handler Session Started ---
+2026-05-11 21:41:14,986 - hik_handler.__main__ - INFO - Starting interactive terminal session.
+2026-05-11 21:41:15,304 - hik_handler.app.user_interface.cli_terminal - DEBUG - Initializing CLITerminal with orchestrator: Orchestrator
+2026-05-11 21:41:15,348 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal Interface initialized successfully.
+2026-05-11 21:41:15,349 - hik_handler.app.user_interface.cli_terminal - DEBUG - Starting main REPL loop
+2026-05-11 21:41:15,349 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing display_welcome
+2026-05-11 21:41:15,355 - hik_handler.app.user_interface.cli_terminal - DEBUG - Welcome banner displayed.
+2026-05-11 21:41:15,356 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:41:32,759 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'list'
+2026-05-11 21:41:32,760 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['list']
+2026-05-11 21:41:32,760 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing 'list' command
+2026-05-11 21:41:32,761 - hik_handler.app.engine.orchestrator - DEBUG - Orchestrator: Fetching available modules from cache.
+2026-05-11 21:41:32,761 - hik_handler.app.engine.loader - DEBUG - Requesting available modules from cache.
+2026-05-11 21:41:32,766 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:42:12,253 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'help 01_minimal_plugin'
+2026-05-11 21:42:12,253 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['help', '01_minimal_plugin']
+2026-05-11 21:42:12,253 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _cmd_help for command: 01_minimal_plugin
+2026-05-11 21:42:12,257 - hik_handler.app.user_interface.cli_terminal - WARNING - Help requested for unknown command: 01_minimal_plugin
+2026-05-11 21:42:12,258 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    File: 02_arguments_plugin.xml
+    Path: plugins/02_arguments_plugin.xml
+    Context Name: ArgumentsPlugin
+    Version: v.1.0.0
+    
+    Description: Плагин, демонстрирующий 3 варианта работы с аргументами 
+    и полезной нагрузкой (payload) на примере настройки разрешения.
+-->
+<module name="image_setup" version="1.0">
+    <name>Image Configuration</name>
+    <description>Module for configuring image resolution with dynamic arguments</description>
+    <commands>
+        
+        <!-- Вариант 1: Полный набор обязательных аргументов без defaults -->
+        <command name="set_resolution_strict" method="PUT" uri="/ISAPI/Streaming/channels/1/picture">
+            <description>Set exact resolution using mandatory width and height</description>
+            <arguments>
+                <arg name="width" type="integer" required="true">
+                    <description>Image width in pixels</description>
+                </arg>
+                <arg name="height" type="integer" required="true">
+                    <description>Image height in pixels</description>
+                </arg>
+            </arguments>
+            <payload>
+                <Picture>
+                    <videoResolutionWidth>${width}</videoResolutionWidth>
+                    <videoResolutionHeight>${height}</videoResolutionHeight>
+                </Picture>
+            </payload>
+            <print>Resolution explicitly set to ${width}x${height}.</print>
+        </command>
+
+        <!-- Вариант 2: Использование значений по умолчанию (defaults) -->
+        <command name="set_resolution_defaults" method="PUT" uri="/ISAPI/Streaming/channels/1/picture">
+            <description>Set resolution relying on fallback default values</description>
+            <arguments>
+                <arg name="width" type="integer" required="false" default="1920"/>
+                <arg name="height" type="integer" required="false" default="1080"/>
+            </arguments>
+            <payload>
+                <Picture>
+                    <videoResolutionWidth>${width}</videoResolutionWidth>
+                    <videoResolutionHeight>${height}</videoResolutionHeight>
+                </Picture>
+            </payload>
+            <print>Resolution set using defaults (if missing) to ${width}x${height}.</print>
+        </command>
+
+        <!-- Вариант 3: Смешанный вариант с одним статичным и одним динамичным параметром -->
+        <command name="set_width_only" method="PUT" uri="/ISAPI/Streaming/channels/1/picture">
+            <description>Update only the width, enforcing a strict 720p height</description>
+            <arguments>
+                <arg name="width" type="integer" required="true"/>
+            </arguments>
+            <payload>
+                <!-- Здесь высота жестко закодирована, а ширина подставляется резолвером -->
+                <Picture>
+                    <videoResolutionWidth>${width}</videoResolutionWidth>
+                    <videoResolutionHeight>720</videoResolutionHeight>
+                </Picture>
+            </payload>
+        </command>
+
+    </commands>
+</module>

@@ -1,0 +1,7 @@
+{
+    "modules": [
+        "01_minimal_plugin",
+        "02_arguments_plugin",
+        "03_resolver_test_plugin"
+    ]
+}

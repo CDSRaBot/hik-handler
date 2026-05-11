@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    File: 01_minimal_plugin.xml
+    Path: plugins/01_minimal_plugin.xml
+    Context Name: MinimalPlugin
+    Version: v.1.0.0
+    
+    Description: Простой плагин без аргументов и полезной нагрузки. 
+    Используется для проверки базовой работоспособности цепочки Оркестратора.
+-->
+<module name="system_diagnostics" version="1.0">
+    <name>System Diagnostics</name>
+    <description>Basic diagnostic module without external parameters</description>
+    <commands>
+        <command name="get_device_info" method="GET" uri="/ISAPI/System/deviceInfo">
+            <description>Retrieves basic device information from the camera</description>
+            <print>Device info retrieved successfully.</print>
+        </command>
+    </commands>
+</module>

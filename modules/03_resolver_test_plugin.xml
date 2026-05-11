@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    File: 03_resolver_test_plugin.xml
+    Path: plugins/03_resolver_test_plugin.xml
+    Context Name: ResolverTestPlugin
+    Version: v.1.0.0
+    
+    Description: Плагин для стресс-теста ArgumentResolver. 
+    Проверяет подстановку переменных непосредственно в атрибут 'uri'.
+-->
+<module name="channel_manager" version="1.0">
+    <name>Channel Manager</name>
+    <description>Advanced module testing dynamic URI resolution for ISAPI channels</description>
+    <commands>
+        
+        <!-- Проверка подстановки в URI (GET запрос) -->
+        <command name="get_channel_info" method="GET" uri="/ISAPI/Streaming/channels/${channel_id}">
+            <description>Fetches capabilities for a specific channel using URI substitution</description>
+            <arguments>
+                <arg name="channel_id" type="integer" required="true" default="101">
+                    <description>Target channel ID (e.g., 101, 102, 201)</description>
+                </arg>
+            </arguments>
+            <print>Successfully fetched data for channel ID: ${channel_id}</print>
+        </command>
+
+        <!-- Сложная проверка: подстановка и в URI, и в Payload (PUT запрос) -->
+        <command name="set_channel_name" method="PUT" uri="/ISAPI/Streaming/channels/${channel_id}">
+            <description>Sets the channel name using simultaneous URI and Payload resolution</description>
+            <arguments>
+                <arg name="channel_id" type="integer" required="true"/>
+                <arg name="channel_name" type="string" required="true"/>
+            </arguments>
+            <payload>
+                <StreamingChannel>
+                    <id>${channel_id}</id>
+                    <channelName>${channel_name}</channelName>
+                </StreamingChannel>
+            </payload>
+            <print>Channel ${channel_id} renamed to '${channel_name}'.</print>
+        </command>
+
+    </commands>
+</module>

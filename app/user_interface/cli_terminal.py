@@ -109,7 +109,7 @@ class CLITerminal:
         print("Available modules: [mocked]")
         logger.info("Module list displayed.")
 
-def _cmd_list(self) -> None:
+    def _cmd_list(self) -> None:
         """Shows all available XML modules indexed in memory."""
         logger.debug("Executing 'list' command")
         modules = self._orchestrator.get_available_modules()
@@ -124,10 +124,24 @@ def _cmd_list(self) -> None:
         print()
 
     def _cmd_run(self, args: List[str]) -> None:
-        """Helper to prepare and execute a run command."""
-        # This will be handled in the next iteration of orchestrator integration
-        logger.info("Command 'run' is still under development for direct CLI execution.")
-        print_formatted_text(HTML("<ansiyellow>Command 'run' is not fully implemented yet.</ansiyellow>"))
+        """Executes the specified module via Orchestrator."""
+        if not args:
+            print_formatted_text(HTML("<ansired>Error: Module name required. Usage: run <module_name> [key=value...]</ansired>"))
+            logger.warning("Run command execution failed: No module name provided.")
+            return
+        
+        module_name = args[0]
+        params = {}
+        
+        for arg in args[1:]:
+            if '=' in arg:
+                key, value = arg.split('=', 1)
+                params[key.strip()] = value.strip()
+            else:
+                logger.warning(f"Ignoring invalid argument format: '{arg}'. Expected key=value.")
+        
+        logger.info(f"Executing module '{module_name}' with params: {params}")
+        self._orchestrator.execute_headless(module_name, **params)
 
     def _cmd_reload(self) -> None:
         """Force refresh of the module indexing system."""

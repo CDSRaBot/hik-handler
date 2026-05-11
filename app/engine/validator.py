@@ -1,7 +1,7 @@
 # validator.py
 # path: hik-handler/data_plane/validator.py
 # context: XML Validation Service
-# version: 1.0.0 (Frozen)
+# version: 1.0.1 (Strict URI integration)
 
 import logging
 import os
@@ -80,9 +80,9 @@ class XMLValidator:
             return True, ""
 
         except (etree.XMLSyntaxError, etree.DocumentInvalid) as e:
-            # Handle malformed XML or schema violations
+            # Handle malformed XML or schema violations (e.g., missing mandatory 'uri')
             error_msg = f"XML/XSD mismatch in {xml_path}: {str(e)}"
-            logger.debug(f"Validation details: {error_msg}")
+            logger.warning(f"Validation failed: {error_msg}")
             return False, error_msg
 
         except FileNotFoundError:
