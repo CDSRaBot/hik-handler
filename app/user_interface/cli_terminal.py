@@ -104,12 +104,6 @@ class CLITerminal:
         return True
 
     def _cmd_list(self) -> None:
-        """Handles the 'list' command."""
-        logger.debug("Executing _cmd_list")
-        print("Available modules: [mocked]")
-        logger.info("Module list displayed.")
-
-    def _cmd_list(self) -> None:
         """Shows all available XML modules indexed in memory."""
         logger.debug("Executing 'list' command")
         modules = self._orchestrator.get_available_modules()
@@ -125,9 +119,12 @@ class CLITerminal:
 
     def _cmd_run(self, args: List[str]) -> None:
         """Executes the specified module via Orchestrator."""
+        logger.debug("Executing _cmd_run with raw args: %s", args)
+        
         if not args:
-            print_formatted_text(HTML("<ansired>Error: Module name required. Usage: run <module_name> [key=value...]</ansired>"))
-            logger.warning("Run command execution failed: No module name provided.")
+            error_msg = "Module name required. Usage: run <module_name> [key=value...]"
+            logger.warning(f"Run command failed: {error_msg}")
+            print_formatted_text(HTML(f"<ansired>Error: {error_msg}</ansired>"))
             return
         
         module_name = args[0]
@@ -137,11 +134,26 @@ class CLITerminal:
             if '=' in arg:
                 key, value = arg.split('=', 1)
                 params[key.strip()] = value.strip()
+                logger.debug(f"Parsed argument: {key.strip()} = {value.strip()}")
             else:
-                logger.warning(f"Ignoring invalid argument format: '{arg}'. Expected key=value.")
+                logger.warning(f"Ignoring invalid argument format in module '{module_name}': '{arg}'. Expected key=value.")
         
-        logger.info(f"Executing module '{module_name}' with params: {params}")
-        self._orchestrator.execute_headless(module_name, **params)
+        logger.info(f"Initiating execution for module '{module_name}' with {len(params)} parameters.")
+        
+        try:
+            # CORRECTED: Passing 'params' as a single dictionary argument, not as **kwargs
+            success = self._orchestrator.execute_headless(module_name, params)
+            
+            if success:
+                logger.info(f"Execution successful for module '{module_name}'.")
+                print_formatted_text(HTML(f"<ansigreen>Success: Module '{module_name}' executed.</ansigreen>"))
+            else:
+                logger.error(f"Execution failed for module '{module_name}' (Orchestrator returned False).")
+                print_formatted_text(HTML(f"<ansired>Failure: Module '{module_name}' failed to execute. Check logs for details.</ansired>"))
+                
+        except Exception as e:
+            logger.exception(f"Critical error during execution of module '{module_name}': {str(e)}")
+            print_formatted_text(HTML(f"<ansired>Critical error: {str(e)}</ansired>"))
 
     def _cmd_reload(self) -> None:
         """Force refresh of the module indexing system."""

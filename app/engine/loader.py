@@ -80,6 +80,22 @@ class ModuleManager:
 
         return module_file
 
+    def read_module(self, module_name: str) -> str:
+        """
+        Reads the content of the XML module file.
+        :param module_name: The name of the module (e.g., '01_minimal_plugin').
+        :return: String containing XML content.
+        :raises FileNotFoundError: If the module file does not exist.
+        """
+        module_path = self.get_module_path(module_name)
+        if not module_path.exists():
+            logger.error(f"Module file not found for reading: {module_path}")
+            raise FileNotFoundError(f"Module {module_name} not found at {module_path}")
+
+        logger.debug(f"Reading module content from: {module_path}")
+        return module_path.read_text(encoding='utf-8')
+
+
     def discover_modules(self) -> List[str]:
         """
         Scans the directory, updates the in-memory cache and the modules.inf file.

@@ -83,12 +83,26 @@ class ConfigManager:
         return context
 
     @property
-    def data(self) -> Dict[str, Any]:
+    def sandbox_path(self) -> Path:
         """
-        Returns raw configuration data for infrastructure components (like Logger).
-        """
-        return self._config_data
+        Returns the path to the sandbox directory.
+        Automatically creates the directory if it does not exist.
         
+        :return: Path object pointing to the sandbox.
+        """
+        logger.debug("Requesting sandbox directory path")
+        path_str = self._config_data.get("paths", {}).get("sandbox_dir", "sandbox")
+        path = Path(path_str).resolve()
+        
+        if not path.exists():
+            try:
+                logger.info(f"Sandbox directory not found. Creating: {path}")
+                path.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                logger.error(f"Failed to create sandbox directory at {path}: {e}")
+                
+        return path
+
     @property
     def modules_path(self) -> Path:
         """

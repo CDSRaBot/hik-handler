@@ -5,6 +5,7 @@
 
 import logging
 import os
+from pathlib import Path
 from lxml import etree
 from defusedxml import lxml as safe_lxml
 
@@ -54,15 +55,17 @@ class XMLValidator:
             logger.error(f"Critical failure during schema initialization: {e}")
             self._schema = None
 
-    def validate(self, xml_path: str) -> tuple[bool, str]:
+    def validate(self, xml_path: str | Path) -> tuple[bool, str]:
         """
         Validates an XML file against the cached XSD schema.
         
-        :param xml_path: Full path to the XML module to be checked.
+        :param xml_path: Full path to the XML module (str or Path object).
         :return: Tuple (is_valid, error_message).
         """
-        logger.info(f"Starting validation for: {xml_path}")
-        
+        # Convert Path object to string for internal processing if necessary
+        str_path = str(xml_path)
+        logger.info(f"Starting validation for: {str_path}")
+   
         # Check if service is ready
         if not self._schema:
             logger.error("Validation rejected: Schema not initialized")

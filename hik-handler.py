@@ -26,6 +26,20 @@ def main():
         # Step 1: Bootstrap the core to load configuration
         # This is required to get paths and settings for the logger
         config = ConfigManager("config.toml")
+        
+        # Access existing data dictionary via .data property
+        network_cfg = config.data.get("network", {})
+        if not network_cfg.get("password", "").strip():
+            import getpass
+            logger.debug("Password empty in config, requesting interactively.")
+            try:
+                user_pwd = getpass.getpass("Enter password for Hikvision device: ")
+                # Update the mutable dictionary managed by ConfigManager
+                network_cfg["password"] = user_pwd
+            except (EOFError, KeyboardInterrupt):
+                logger.info("Password input interrupted by user.")
+                sys.exit(0)
+        
         orchestrator = Orchestrator.bootstrap(config)
         
         # Step 2: Initialize infrastructure (Logging)

@@ -2,15 +2,14 @@
 File: resolver.py
 Path: app/engine/resolver.py
 Context Name: ArgumentResolver
-Version: v.1.0.0
+Version: v.1.1.0 (Security Hardened)
 
 Module for resolving (substituting) arguments and extracting ISAPI metadata from XML templates.
-Uses string.Template for safe substitution and ElementTree for structural parsing.
-Note: ElementTree is used to minimize dependencies; switching to more secure libraries 
-(e.g., defusedxml) is possible if enhanced security is required.
+Uses string.Template for safe substitution and defusedxml.ElementTree for secure structural parsing.
+Note: Switched to defusedxml to provide protection against XXE (XML External Entity) attacks.
 """
 import logging
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from string import Template
 from typing import Any, Dict
 
@@ -59,7 +58,7 @@ class ArgumentResolver:
         
         try:
             # Parse XML to find metadata in attributes
-            # Standard ET is used; replacement with lxml/defusedxml is possible in the future
+            # Using defusedxml for secure parsing (XXE protection)
             root = ET.fromstring(xml_content)
             
             # Extract method and URI from root attributes

@@ -326,3 +326,37 @@ TypeError: Orchestrator.execute_headless() missing 1 required positional argumen
 2026-05-11 21:42:12,253 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _cmd_help for command: 01_minimal_plugin
 2026-05-11 21:42:12,257 - hik_handler.app.user_interface.cli_terminal - WARNING - Help requested for unknown command: 01_minimal_plugin
 2026-05-11 21:42:12,258 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:50:30,835 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'help 01_minimal_plugin'
+2026-05-11 21:50:30,835 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['help', '01_minimal_plugin']
+2026-05-11 21:50:30,836 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _cmd_help for command: 01_minimal_plugin
+2026-05-11 21:50:30,840 - hik_handler.app.user_interface.cli_terminal - WARNING - Help requested for unknown command: 01_minimal_plugin
+2026-05-11 21:50:30,841 - hik_handler.app.user_interface.cli_terminal - DEBUG - Building autocompleter with base commands
+2026-05-11 21:50:45,080 - hik_handler.app.user_interface.cli_terminal - DEBUG - Executing _handle_command with input: 'run'
+2026-05-11 21:50:45,080 - hik_handler.app.user_interface.cli_terminal - DEBUG - Command parsed by shlex into parts: ['run']
+2026-05-11 21:50:45,085 - hik_handler.app.user_interface.cli_terminal - INFO - Terminal session closed.
+2026-05-11 21:50:45,085 - hik_handler.__main__ - ERROR - Unhandled critical system error: mismatched tag: line 1, column 90
+Traceback (most recent call last):
+  File "C:\Git\hik-handler\hik-handler.py", line 51, in main
+    terminal.run()
+    ~~~~~~~~~~~~^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 205, in run
+    if not self._handle_command(user_input):
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 95, in _handle_command
+    self._cmd_run(args)
+    ~~~~~~~~~~~~~^^^^^^
+  File "C:\Git\hik-handler\app\user_interface\cli_terminal.py", line 129, in _cmd_run
+    print_formatted_text(HTML("<ansired>Error: Module name required. Usage: run <module_name> [key=value...]</ansired>"))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LD Laptop\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\prompt_toolkit\formatted_text\html.py", line 35, in __init__
+    document = minidom.parseString(f"<html-root>{value}</html-root>")
+  File "C:\Users\LD Laptop\AppData\Local\Python\pythoncore-3.14-64\Lib\xml\dom\minidom.py", line 2011, in parseString
+    return expatbuilder.parseString(string)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\LD Laptop\AppData\Local\Python\pythoncore-3.14-64\Lib\xml\dom\expatbuilder.py", line 922, in parseString
+    return builder.parseString(string)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\LD Laptop\AppData\Local\Python\pythoncore-3.14-64\Lib\xml\dom\expatbuilder.py", line 220, in parseString
+    parser.Parse(string, True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^
+xml.parsers.expat.ExpatError: mismatched tag: line 1, column 90

@@ -169,16 +169,20 @@ class Orchestrator:
 
         # Step 1: Load Module
         logger.debug(f"Step 1: Fetching module content for '{context.module_name}'")
-        module_data = self._loader.get_module(context.module_name)
-        if not module_data:
-            logger.error(f"Pipeline Error: Data for module '{context.module_name}' is empty.")
+        try:
+            # Get path for validator and content for resolver
+            module_path = self._loader.get_module_path(context.module_name)
+            module_data = self._loader.read_module(context.module_name)
+        except Exception as e:
+            logger.error(f"Pipeline Error: Failed to load module '{context.module_name}' - {e}")
             return False
 
         # Step 2: XSD Validation (Step 0 Security check)
         logger.debug("Step 2: Performing XML structural validation against XSD.")
-        if not self._validator.validate(module_data):
-             logger.error(f"Pipeline Error: XML validation failed for '{context.module_name}'.")
-             return False
+        is_valid, error_msg = self._validator.validate(module_path)
+        if not is_valid:
+            logger.error(f"Pipeline Error: XML validation failed for '{context.module_name}': {error_msg}")
+            return False
 
         # Step 3: Argument Resolution
         logger.debug("Step 3: Resolving placeholders and extracting ISAPI metadata.")

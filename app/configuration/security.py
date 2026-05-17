@@ -61,9 +61,14 @@ class SecureContext:
         }
         
         # Mandatory fields validation
-        if not all([context_data["host"], context_data["user"], context_data["password"]]):
+        if not all([context_data["host"], context_data["user"]]):
             logger.error("Mandatory connection parameters missing in assembly dict")
-            raise ValueError("Host, user, and password are required for SecureContext")
+            raise ValueError("Host and user are required for SecureContext")
+        
+        # Explicit check for non-empty password
+        if not context_data["password"] or not context_data["password"].strip():
+            logger.error("SecureContext creation failed: Password is empty")
+            raise ValueError("Password is required and cannot be empty")
             
         return cls(**context_data)
 
