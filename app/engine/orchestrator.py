@@ -21,6 +21,7 @@ from app.engine.loader import ModuleManager
 from app.engine.validator import XMLValidator
 from app.engine.resolver import ArgumentResolver
 from app.communication.session import HikvisionClient, HikvisionNetworkError
+from app.engine.post_processors import BasePostProcessor, CSVExporter
 
 # Logger configuration for the module
 logger = logging.getLogger(f"hik_handler.{__name__}")
@@ -37,7 +38,8 @@ class Orchestrator:
         validator: XMLValidator,
         resolver: ArgumentResolver,
         client: HikvisionClient,
-        base_context: SecureContext
+        base_context: Optional[SecureContext] = None,
+        processors: List[BasePostProcessor] = None
     ):
         """
         Initialize the orchestrator with its dependencies.
@@ -47,16 +49,51 @@ class Orchestrator:
             validator (XMLValidator): Validates XML against XSD schemas.
             resolver (ArgumentResolver): Injects params and extracts ISAPI metadata.
             client (HikvisionClient): Default network client.
-            base_context (SecureContext): Global/Default connection settings.
+            base_context (SecureContext, optional): Global/Default connection settings.
+            processors (List[BasePostProcessor]): Optional list of post-processors.
         """
         self._loader = loader
         self._validator = validator
         self._resolver = resolver
         self._client = client
         self._base_context = base_context
-        self._version = "1.0.4"
+        self._processors = processors or []
+        self._version = "1.1.0"
         
         logger.debug(f"Orchestrator constructor: instance created (v{self._version})")
+
+    def set_context(self, context: SecureContext) -> None:
+        """
+        Dynamically sets the active connection context for the session.
+        """
+        logger.info(f"Orchestrator: Setting active context for host: {context.host}")
+        self._base_context = context
+
+    def disconnect(self) -> None:
+        """
+        Clears the current session context.
+        """
+        logger.info("Orchestrator: Clearing active session context.")
+        self._base_context = None
+
+    def check_connection(self) -> bool:
+        """
+        Performs a lightweight connectivity check.
+        Returns True if the camera responds, False otherwise.
+        """
+        if not self._base_context:
+            logger.warning("Orchestrator: Cannot check connection, no context active.")
+            return False
+            
+        logger.info(f"Orchestrator: Checking connectivity to {self._base_context.host}...")
+        try:
+            # Lightweight request to check connectivity
+            with HikvisionClient(self._base_context) as conn:
+                conn.execute(method="GET", url_path="/ISAPI/System/deviceInfo")
+            return True
+        except Exception as e:
+            logger.error(f"Orchestrator: Connection verification failed: {e}")
+            return False
 
     @classmethod
     def bootstrap(cls, config: ConfigManager) -> "Orchestrator":
@@ -79,18 +116,22 @@ class Orchestrator:
         validator = XMLValidator(xsd_path=str(config.schema_path))
         resolver = ArgumentResolver()
         
-        # 3. Инициализируем Network Plane
+        # 3. Инициализируем пост-процессоры
+        processors = [CSVExporter(config.export_path)]
+        
+        # 4. Инициализируем Network Plane
         client = HikvisionClient(context=base_context)
         
         logger.info("Bootstrap: All subsystems initialized. Returning Orchestrator instance.")
         
-        # 4. Собираем сам Оркестратор
+        # 5. Собираем сам Оркестратор
         return cls(
             loader=loader,
             validator=validator,
             resolver=resolver,
             client=client,
-            base_context=base_context
+            base_context=base_context,
+            processors=processors
         )
 
     def execute_headless(
@@ -126,7 +167,7 @@ class Orchestrator:
         self, 
         module_name: str, 
         params: Dict[str, str], 
-        connect_str: Optional[str]
+        connect_str: Optional[str] = None
     ) -> Optional[SecureContext]:
         """
         Private helper to generate a command-specific SecureContext.
@@ -135,15 +176,8 @@ class Orchestrator:
         logger.debug(f"Context: Merging task parameters for module '{module_name}'")
         
         try:
-            # SecureContext.create_from_input handles the actual merging logic
-            context = SecureContext.create_from_input(
-                base=self._base_context,
-                module_name=module_name,
-                params=params,
-                connect_str=connect_str
-            )
-            logger.debug(f"Context: SecureContext for '{module_name}' successfully prepared.")
-            return context
+            # Using existing with_task method to clone context with task details
+            return self._base_context.with_task(module_name=module_name, params=params)
         except Exception as e:
             logger.error(f"Context: Generation failure - {str(e)}")
             return None
@@ -186,7 +220,11 @@ class Orchestrator:
 
         # Step 3: Argument Resolution
         logger.debug("Step 3: Resolving placeholders and extracting ISAPI metadata.")
-        method, url, payload = self._resolver.resolve(module_data, context.params)
+        # Use resolve_command to get method, url, and payload from the parsed XML module
+        metadata = self._resolver.resolve_command(module_data, context.params)
+        method = metadata["method"]
+        url = metadata["url"]
+        payload = metadata["body"]
         
         # Step 4: Network Dispatch
         logger.info(f"Network: Dispatching {method} request to '{url}'")
@@ -206,6 +244,14 @@ class Orchestrator:
             if response:
                 logger.info(f"Result: Task '{context.module_name}' completed successfully.")
                 logger.debug(f"Response (length: {len(response)}): {response}")
+                
+                # Step 5: Post-processing pipeline (Export/Logger/etc.)
+                for processor in self._processors:
+                    try:
+                        processor.process(context, response)
+                    except Exception as e:
+                        logger.error(f"Post-processor '{processor.__class__.__name__}' failed: {e}")
+                
                 return True
                 
         except HikvisionNetworkError as ne:

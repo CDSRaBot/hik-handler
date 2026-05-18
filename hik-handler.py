@@ -20,33 +20,17 @@ def main():
     Main application entry point.
     Coordinates core bootstrap, infrastructure setup, and command execution.
     """
-    logger.info("Initializing Hik-handler system...")
+    logger.info("/n ===============<   Initializing Hik-handler system...   >===============")
     
     try:
         # Step 1: Bootstrap the core to load configuration
-        # This is required to get paths and settings for the logger
         config = ConfigManager("config.toml")
-        
-        # Access existing data dictionary via .data property
-        network_cfg = config.data.get("network", {})
-        if not network_cfg.get("password", "").strip():
-            import getpass
-            logger.debug("Password empty in config, requesting interactively.")
-            try:
-                user_pwd = getpass.getpass("Enter password for Hikvision device: ")
-                # Update the mutable dictionary managed by ConfigManager
-                network_cfg["password"] = user_pwd
-            except (EOFError, KeyboardInterrupt):
-                logger.info("Password input interrupted by user.")
-                sys.exit(0)
-        
         orchestrator = Orchestrator.bootstrap(config)
         
         # Step 2: Initialize infrastructure (Logging)
         # We pass the loaded config object to configure file rotation and levels
         setup_logger(config)
         logger.info("Infrastructure and logging are successfully initialized.")
-        
         logger.info("--- Hik-handler Session Started ---")
         
         # Step 3: Determine execution mode based on CLI arguments
@@ -64,7 +48,7 @@ def main():
             terminal = CLITerminal(orchestrator)
             terminal.run()
             
-        logger.info("--- Hik-handler Session Finished ---")
+        logger.info("\n ===============< Hik-handler Session Finished >=============== \n")
         
     except KeyboardInterrupt:
         # Silent exit on user interrupt (Ctrl+C)

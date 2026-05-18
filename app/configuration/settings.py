@@ -104,6 +104,27 @@ class ConfigManager:
         return path
 
     @property
+    def export_path(self) -> Path:
+        """
+        Returns the path to the export directory.
+        Automatically creates the directory if it does not exist.
+        
+        :return: Path object pointing to the export directory.
+        """
+        logger.debug("Requesting export directory path")
+        path_str = self._config_data.get("paths", {}).get("export_dir", "exports")
+        path = Path(path_str).resolve()
+        
+        if not path.exists():
+            try:
+                logger.info(f"Export directory not found. Creating: {path}")
+                path.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                logger.error(f"Failed to create export directory at {path}: {e}")
+                
+        return path
+
+    @property
     def modules_path(self) -> Path:
         """
         Возвращает путь к директории с модулями.

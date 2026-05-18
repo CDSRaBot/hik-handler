@@ -70,6 +70,7 @@ def setup_logger(config: Any) -> logging.Logger:
     logger.propagate = True
 
     # Initial logs
+    logger.info("\n ===============<   Initializing Hik-handler system...   >=============== \n")
     logger.debug(f"Logger infrastructure ready. Root: {base_name}, Level: {log_level_str}")
     logger.info("Logging system initialized (File & Console).")
     

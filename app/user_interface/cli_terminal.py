@@ -33,14 +33,16 @@ class CLITerminal:
         
         # Base commands for autocompletion
         self._base_commands = [
-            'help', 'list', 'run', 'reload', 'status', 'clear', 'exit'
+            'help', 'list', 'run', 'connect', 'disconnect', 'reload', 'status', 'clear', 'exit'
         ]
 
         # Detailed help descriptions for commands
         self._command_descriptions: Dict[str, str] = {
             'list': 'Shows all available XML modules located in the modules directory.',
+            'connect': 'Initializes a new session. Usage: <i>connect login:password@host</i>.',
+            'disconnect': 'Terminates the current session context.',
             'run': 'Executes a specific module. Usage: <i>run &lt;name&gt; [args]</i>.\n'
-                   'Arguments are passed to the module as key=value pairs.',
+                   'Arguments are passed as key=value. Example: <i>run my_module export=csv</i>.',
             'reload': 'Rescans the modules directory and reloads available modules.',
             'status': 'Displays system health, connection status, and loaded modules.',
             'clear': 'Clears the terminal screen.',
@@ -53,7 +55,8 @@ class CLITerminal:
         logger.debug("Executing display_welcome")
         clear_screen()
         print_formatted_text(HTML("<ansiblue><b>Hik-handler CLI Terminal</b></ansiblue>"))
-        print_formatted_text(HTML("<b>Type 'help' to see available commands.</b>\n"))
+        print_formatted_text(HTML("<b>Type 'help' to see available commands.</b>"))
+        print_formatted_text(HTML("<b>To connect to a device, run:</b> <i>connect login:password@host</i>\n"))
         logger.debug("Welcome banner displayed.")
 
     def _get_completer(self) -> WordCompleter:
@@ -83,6 +86,7 @@ class CLITerminal:
 
         if command == 'exit':
             logger.debug("Exit command received.")
+            self._cmd_disconnect()
             return False
         elif command == 'clear':
             logger.debug("Clear command received.")
@@ -91,6 +95,10 @@ class CLITerminal:
             self._cmd_help(args[0] if args else None)
         elif command == 'list':
             self._cmd_list()
+        elif command == 'connect':
+            self._cmd_connect(args)
+        elif command == 'disconnect':
+            self._cmd_disconnect()
         elif command == 'run':
             self._cmd_run(args)
         elif command == 'reload':
@@ -117,13 +125,80 @@ class CLITerminal:
             print(f"  {idx}. {name}")
         print()
 
+    def _cmd_disconnect(self) -> None:
+        """Terminates active session."""
+        self._orchestrator.disconnect()
+        print_formatted_text(HTML("<ansiyellow>Session terminated.</ansiyellow>"))
+        logger.info("Terminal: Session disconnected.")
+
+    def _cmd_connect(self, args: List[str]) -> None:
+        """Parses connection string and initializes session."""
+        self._cmd_disconnect() # Implicitly disconnect before new session
+        if not args:
+            print_formatted_text(HTML("<ansired>Error: Connection string required. Usage: connect 'login:password@host'</ansired>"))
+            return
+
+        conn_str = args[0]
+        try:
+            # Parse user:pass@host
+            if '@' not in conn_str or ':' not in conn_str:
+                raise ValueError("Invalid format. Use 'login:password@host'")
+            
+            auth, host = conn_str.split('@', 1)
+            user, password = auth.split(':', 1)
+            
+            from app.configuration.security import SecureContext
+            context = SecureContext(host=host, user=user, password=password)
+            
+            # Connection verification (Strict)
+            logger.info(f"Terminal: Verifying connection to {host}...")
+            from app.communication.session import HikvisionClient
+            try:
+                with HikvisionClient(context) as conn:
+                    # Attempt a real request to verify credentials and connectivity
+                    conn.execute(method="GET", url_path="/ISAPI/System/deviceInfo")
+                
+                # If we reached here, verification is successful
+                self._orchestrator.set_context(context)
+                print_formatted_text(HTML("<ansigreen>Connected: Device verified and authorized.</ansigreen>"))
+                logger.info(f"Terminal: Session initialized for host: {host}")
+                
+            except Exception as e:
+                # Analyze failure reason (Network or Auth)
+                err_str = str(e).lower()
+                if "401" in err_str or "unauthorized" in err_str:
+                    msg = "Not connected: not authorized. Check login and password."
+                else:
+                    msg = f"Not connected: device verification failed. ({e})"
+                
+                # We log this as a warning with full error detail, but it's an expected failure type
+                logger.warning(f"Terminal: Connection verification failed for {host}: {e}")
+                
+                # Use standard library to escape special characters for HTML output
+                from html import escape
+                print_formatted_text(HTML(f"<ansired>{escape(msg)}</ansired>"))
+            
+        except ValueError as e:
+            # This is for shlex or logic errors during parsing
+            logger.error(f"Terminal: Connection string parsing failed: {e}")
+            print_formatted_text(HTML(f"<ansired>Syntax error: {e}</ansired>"))
+        except Exception:
+            # Truly unexpected errors (bugs in code, OS-level issues)
+            logger.exception("Terminal: Unexpected system error during connection setup")
+            print_formatted_text(HTML("<ansired>Internal system error. Check logs for details.</ansired>"))
+
     def _cmd_run(self, args: List[str]) -> None:
         """Executes the specified module via Orchestrator."""
+        # Session check
+        if not self._orchestrator._base_context:
+            print_formatted_text(HTML("<ansiyellow>Error: No active session. Please 'connect' first.</ansiyellow>"))
+            return
+
         logger.debug("Executing _cmd_run with raw args: %s", args)
-        
+        # ... (rest of method unchanged) ...
         if not args:
-            error_msg = "Module name required. Usage: run <module_name> [key=value...]"
-            logger.warning(f"Run command failed: {error_msg}")
+            error_msg = "Module name required. Usage: run &lt;module_name&gt; [key=value...]"
+            logger.warning(f"Run command failed: Module name required.")
             print_formatted_text(HTML(f"<ansired>Error: {error_msg}</ansired>"))
             return
         
