@@ -1,5 +1,4 @@
 __pycache__/
-logs/
 *.log
 .terminal_history
 logs/hik-handler.log
