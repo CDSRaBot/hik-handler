@@ -59,8 +59,8 @@ def setup_logger(config: Any) -> logging.Logger:
     # 2. Console Handler (for CLI feedback)
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(console_formatter)
-    # Usually we want console to be slightly less verbose or match the main level
-    console_handler.setLevel(log_level)
+    # Set to CRITICAL to suppress technical noise on screen; UI will handle error display
+    console_handler.setLevel(logging.CRITICAL)
     
     # Attach handlers
     logger.addHandler(file_handler)

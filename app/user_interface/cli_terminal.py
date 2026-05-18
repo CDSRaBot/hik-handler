@@ -131,6 +131,20 @@ class CLITerminal:
         print_formatted_text(HTML("<ansiyellow>Session terminated.</ansiyellow>"))
         logger.info("Terminal: Session disconnected.")
 
+    def _handle_connection_error(self, e: Exception) -> None:
+        """Translates technical exceptions into human-readable markers."""
+        err_str = str(e).lower()
+        if "401" in err_str or "unauthorized" in err_str:
+            msg = "Error: Invalid login or password."
+        elif "403" in err_str or "forbidden" in err_str:
+            msg = "Error: Access forbidden. Check account permissions."
+        elif "timeout" in err_str or "connection" in err_str:
+            msg = "Error: Device unreachable. Check IP, network, or power."
+        else:
+            msg = f"Error: Connection failed. ({e})"
+        
+        print_formatted_text(HTML(f"<ansired>{msg}</ansired>"))
+
     def _cmd_connect(self, args: List[str]) -> None:
         """Parses connection string and initializes session."""
         self._cmd_disconnect() # Implicitly disconnect before new session
@@ -228,7 +242,7 @@ class CLITerminal:
                 
         except Exception as e:
             logger.exception(f"Critical error during execution of module '{module_name}': {str(e)}")
-            print_formatted_text(HTML(f"<ansired>Critical error: {str(e)}</ansired>"))
+            self._handle_connection_error(e)
 
     def _cmd_reload(self) -> None:
         """Force refresh of the module indexing system."""
