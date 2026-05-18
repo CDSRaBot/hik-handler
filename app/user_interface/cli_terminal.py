@@ -8,7 +8,7 @@ import shlex
 from typing import NoReturn, Optional, List, Dict
 
 from prompt_toolkit import PromptSession, print_formatted_text, HTML
-from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.completion import NestedCompleter
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.shortcuts import clear as clear_screen
 
@@ -59,10 +59,24 @@ class CLITerminal:
         print_formatted_text(HTML("<b>To connect to a device, run:</b> <i>connect login:password@host</i>\n"))
         logger.debug("Welcome banner displayed.")
 
-    def _get_completer(self) -> WordCompleter:
-        """Returns a dynamically updating autocompleter."""
-        logger.debug("Building autocompleter with base commands")
-        return WordCompleter(self._base_commands, ignore_case=True)
+    def _get_completer(self) -> NestedCompleter:
+        """Returns a dynamically updating autocompleter with module support."""
+        logger.debug("Building dynamic autocompleter")
+        
+        # Get dynamic module list
+        modules = self._orchestrator.get_available_modules()
+        
+        return NestedCompleter.from_nested_dict({
+            'help': None,
+            'list': None,
+            'run': {m: None for m in modules},
+            'connect': None,
+            'disconnect': None,
+            'reload': None,
+            'status': None,
+            'clear': None,
+            'exit': None
+        })
 
     def _handle_command(self, command_str: str) -> bool:
         """
@@ -274,6 +288,8 @@ class CLITerminal:
         if not command:
             print_formatted_text(HTML("\n<ansigreen><b>Available Commands:</b></ansigreen>"))
             print("  list               - Show available XML modules")
+            print("  connect <conn_str> - Connect to a device (login:pass@host)")
+            print("  disconnect         - Terminate current session")
             print("  run <name> [args]  - Execute module with arguments")
             print("  reload             - Rescan modules directory")
             print("  status             - System health and loaded data")
