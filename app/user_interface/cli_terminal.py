@@ -5,6 +5,9 @@
 
 import logging
 import shlex
+import sys
+import time
+import threading
 from typing import NoReturn, Optional, List, Dict
 
 from prompt_toolkit import PromptSession, print_formatted_text, HTML
@@ -215,6 +218,28 @@ class CLITerminal:
             logger.exception("Terminal: Unexpected system error during connection setup")
             print_formatted_text(HTML("<ansired>Internal system error. Check logs for details.</ansired>"))
 
+    def _with_spinner(self, task_func, *args, **kwargs):
+        """Simple spinner to indicate network activity."""
+        spinner = ['-', '\\', '|', '/']
+        stop_event = threading.Event()
+        
+        def spin():
+            i = 0
+            while not stop_event.is_set():
+                sys.stdout.write(f"\rExecuting... {spinner[i % len(spinner)]}")
+                sys.stdout.flush()
+                time.sleep(0.1)
+                i += 1
+            sys.stdout.write("\r" + " " * 20 + "\r") # Clear spinner line
+
+        thread = threading.Thread(target=spin)
+        thread.start()
+        try:
+            return task_func(*args, **kwargs)
+        finally:
+            stop_event.set()
+            thread.join()
+
     def _cmd_run(self, args: List[str]) -> None:
         """Executes the specified module via Orchestrator."""
         # Session check
@@ -245,7 +270,8 @@ class CLITerminal:
         
         try:
             # CORRECTED: Passing 'params' as a single dictionary argument, not as **kwargs
-            success = self._orchestrator.execute_headless(module_name, params)
+            # Wrap in spinner for UI feedback during network operations
+            success = self._with_spinner(self._orchestrator.execute_headless, module_name, params)
             
             if success:
                 logger.info(f"Execution successful for module '{module_name}'.")
