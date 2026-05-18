@@ -3,3 +3,4 @@ logs/
 *.log
 .terminal_history
 logs/hik-handler.log
+/logs
